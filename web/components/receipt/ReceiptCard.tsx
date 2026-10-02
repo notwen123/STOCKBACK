@@ -8,11 +8,14 @@ const fmtDate = (d: string) => {
 };
 
 /** Paper receipt rendering of the (normalised) receipt fields. */
-export function ReceiptCard({ r, className, demo }: { r: Partial<ReceiptInput>; className?: string; demo?: boolean }) {
+export function ReceiptCard({ r, className, demo, signed }: { r: Partial<ReceiptInput>; className?: string; demo?: boolean; signed?: boolean }) {
   const b = r.brand ? brandById(r.brand) : undefined;
   const amount = Number(r.amount || 0);
   return (
     <div className={`relative bg-[#FBF8F1] px-6 pb-8 pt-6 font-mono text-[0.75rem] text-ink shadow-[0_30px_50px_-30px_rgba(23,23,23,.45)] ${className ?? ""}`}>
+      {signed && (
+        <span className="absolute left-3 top-3 border border-ink/40 px-1.5 py-0.5 text-[0.55rem] uppercase tracking-[0.18em]">Merchant-signed · simulated</span>
+      )}
       {demo && (
         <span className="absolute right-3 top-3 border border-vermilion/50 px-1.5 py-0.5 text-[0.55rem] uppercase tracking-[0.18em] text-vermilion-deep">Demo</span>
       )}

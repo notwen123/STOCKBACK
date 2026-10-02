@@ -12,6 +12,7 @@ import {
   type Hex,
 } from "viem";
 import { BRANDS, brandById, type Brand } from "./brands";
+import type { Evidence } from "./evidence";
 import { robinhoodTestnet, txUrl } from "./chain";
 import {
   FROM_BLOCK,
@@ -44,6 +45,20 @@ export type AttestedClaim = {
   attestation: Hex;
   claimId: Hex;
   scheme: "ed25519" | "ecdsa";
+  evidence: Evidence;
+  /** Merchant-signed fields, present only for evidence === "merchant-signed". */
+  receipt?: MerchantReceipt;
+};
+
+export type MerchantReceipt = {
+  merchantId: string;
+  merchantName: string;
+  brand: string;
+  receiptId: string;
+  amount: string; // minor units
+  currency: string;
+  issuedAt: string;
+  expiresAt: string;
 };
 
 /** Receipt fields the user confirms before attestation. amount is in rupees (decimal string). */
@@ -228,11 +243,16 @@ export const getBrandCount = () =>
 // ---------------------------------------------------------------- claim flow
 
 /** Ask the attester API to hash + sign the receipt. The browser never sees attester keys. */
-export async function prepareClaim(claimant: Address, r: ReceiptInput): Promise<AttestedClaim> {
+export const prepareClaim = (claimant: Address, r: ReceiptInput) => attest({ claimant, ...r });
+
+/** Merchant-signed path: the server verifies the merchant signature before attesting. */
+export const prepareMerchantClaim = (claimant: Address, signedReceipt: string) => attest({ claimant, signedReceipt });
+
+async function attest(payload: Record<string, string>): Promise<AttestedClaim> {
   const res = await fetch("/api/attest", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ claimant, ...r }),
+    body: JSON.stringify(payload),
   });
   const body = await res.json();
   if (!res.ok) throw new Error(body.error ?? "Attestation failed");
@@ -247,6 +267,8 @@ export async function prepareClaim(claimant: Address, r: ReceiptInput): Promise<
     attestation: body.attestation,
     claimId: body.claimId,
     scheme: body.scheme,
+    evidence: body.evidence,
+    receipt: body.receipt,
   };
 }
 
@@ -274,6 +296,7 @@ export type ClaimError =
   | { kind: "rejected" }
   | { kind: "funds" }
   | { kind: "status"; status: number }
+  | { kind: "receipt"; message: string }
   | { kind: "other"; detail: string };
 
 /** Turn any wallet / RPC / revert error into a product-level error. Raw detail kept for "technical details". */

@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { decodeEventLog, type Hex } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 import { Stamp } from "@/components/art/Art";
@@ -12,6 +12,8 @@ import { VerificationPipeline } from "@/components/protocol/VerificationPipeline
 import { Arrow, Button, ButtonLink, Eyebrow } from "@/components/ui/Button";
 import { BRANDS, brandById } from "@/lib/brands";
 import { FAUCET_URL } from "@/lib/chain";
+import { EVIDENCE, type Evidence } from "@/lib/evidence";
+import { decodeSignedReceipt } from "@/lib/merchant-receipt.mjs";
 import { receiptCommitmentRegistryAbi } from "@/lib/contracts";
 import { readReceipt } from "@/lib/ocr";
 import {
@@ -21,17 +23,22 @@ import {
   getTransactionUrl,
   inr,
   prepareClaim,
+  prepareMerchantClaim,
   publicClient,
   submitClaimRequest,
   units,
   type AttestedClaim,
   type ClaimError,
+  type MerchantReceipt,
   type ReceiptInput,
 } from "@/lib/stockback";
+import { QrScanner } from "./QrScanner";
 import { ReceiptCard } from "./ReceiptCard";
 
 type Stage =
   | { s: "choose" }
+  | { s: "qr" }
+  | { s: "merchant"; payload: string }
   | { s: "reading"; progress: number; preview?: string }
   | { s: "review"; demo: boolean; preview?: string; note?: string }
   | { s: "working"; label: string }
@@ -47,6 +54,16 @@ const today = () => {
 };
 const rand4 = () => Math.random().toString(36).slice(2, 6).toUpperCase();
 
+/** Display-only view of a merchant receipt. Nothing here is trusted: the server verifies the signature. */
+const receiptToForm = (r: MerchantReceipt): ReceiptInput => ({
+  brand: r.brand as ReceiptInput["brand"],
+  merchant: r.merchantName,
+  receiptRef: r.receiptId,
+  amount: (Number(r.amount) / 100).toFixed(2),
+  currency: r.currency,
+  date: new Date(Number(r.issuedAt) * 1000).toISOString().slice(0, 10),
+});
+
 export function ScanFlow() {
   const { address } = useAccount();
   const { data: verifier } = useVerifier();
@@ -57,7 +74,33 @@ export function ScanFlow() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const brand = brandById(form.brand)!;
+  const brand = brandById(form.brand) ?? brandById("NIKE")!;
+
+  // Merchant QR: decode for display only, then hand the raw payload to the server for verification.
+  const openPayload = useCallback((text: string) => {
+    try {
+      const { receipt } = decodeSignedReceipt(text);
+      const payload = text.match(/[#?&]r=([^&#\s]+)/)?.[1] ?? text.trim();
+      setForm(receiptToForm(receipt as MerchantReceipt));
+      setStage({ s: "merchant", payload: decodeURIComponent(payload) });
+    } catch {
+      setStage({ s: "error", error: { kind: "receipt", message: "This QR code isn't a valid STOCKBACK receipt." } });
+    }
+  }, []);
+
+  // Deep link from the merchant QR (/app/scan#r=…). Fragment never reaches the server; strip it after reading.
+  useEffect(() => {
+    const read = () => {
+      const h = window.location.hash;
+      if (!h.includes("r=")) return;
+      history.replaceState(null, "", window.location.pathname);
+      openPayload(h);
+    };
+    read();
+    // A second receipt link opened while already on this page only changes the fragment.
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, [openPayload]);
   const vkind = verifier?.kind ?? "unknown";
 
   function loadDemo() {
@@ -109,6 +152,19 @@ export function ScanFlow() {
       setStage({ s: "preview", claim, status, reward });
     } catch (e) {
       setStage({ s: "error", error: { kind: "other", detail: e instanceof Error ? e.message : String(e) } });
+    }
+  }
+
+  async function proveMerchant(payload: string) {
+    if (!address) return;
+    try {
+      setStage({ s: "working", label: "Verifying merchant signature…" });
+      const claim = await prepareMerchantClaim(address, payload);
+      setStage({ s: "working", label: "Checking eligibility…" });
+      const { status, reward } = await getClaimStatus(claim);
+      setStage({ s: "preview", claim, status, reward });
+    } catch (e) {
+      setStage({ s: "error", error: { kind: "receipt", message: e instanceof Error ? e.message : String(e) } });
     }
   }
 
@@ -171,11 +227,37 @@ export function ScanFlow() {
           className="mt-10"
         >
           {stage.s === "choose" && (
-            <div className="grid gap-px bg-ink/10 sm:grid-cols-3">
-              <Choice title="Camera" body="Photograph a paper receipt." onClick={() => cameraRef.current?.click()} icon="M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-              <Choice title="Upload" body="Choose a receipt image." onClick={() => uploadRef.current?.click()} icon="M12 16V4M7 9l5-5 5 5M4 20h16" />
-              <Choice title="Use demo receipt" body="Nike · ₹2,000 · a fresh receipt ID." onClick={loadDemo} icon="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6" accent />
+            <div>
+              <div className="grid gap-px bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
+                <Choice title="Merchant QR" body="A receipt signed by the merchant. Strongest demo evidence." tag={EVIDENCE["merchant-signed"].short} onClick={() => setStage({ s: "qr" })} icon="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2" accent />
+                <Choice title="Camera" body="Photograph a paper receipt." tag={EVIDENCE["attested-entry"].short} onClick={() => cameraRef.current?.click()} icon="M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                <Choice title="Upload" body="Choose a receipt image." tag={EVIDENCE["attested-entry"].short} onClick={() => uploadRef.current?.click()} icon="M12 16V4M7 9l5-5 5 5M4 20h16" />
+                <Choice title="Typed demo" body="Nike · ₹2,000 · a fresh receipt ID." tag={EVIDENCE["attested-entry"].short} onClick={loadDemo} icon="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6" />
+              </div>
+              <p className="mt-4 text-sm text-muted">
+                No merchant QR? Issue one from the <Link className="ink-link" href="/merchant">simulated point-of-sale</Link>.
+              </p>
             </div>
+          )}
+
+          {stage.s === "qr" && <QrScanner onResult={openPayload} onBack={() => setStage({ s: "choose" })} />}
+
+          {stage.s === "merchant" && (
+            <Split visual={<ReceiptCard r={form} signed className="float" />}>
+              <EvidenceNote kind="merchant-signed" />
+              <p className="mt-5 text-sm text-charcoal">
+                These details are shown from the QR. Nothing is trusted yet: the server checks the merchant signature, expiry and whether this receipt was already used.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button onClick={() => proveMerchant(stage.payload)} disabled={!address}>
+                  Verify signature <Arrow />
+                </Button>
+                <Button variant="ghost" onClick={() => setStage({ s: "choose" })}>
+                  Back
+                </Button>
+              </div>
+              {!address && <p className="mt-3 text-sm text-muted">Connect your wallet to continue.</p>}
+            </Split>
           )}
 
           {stage.s === "reading" && (
@@ -206,9 +288,11 @@ export function ScanFlow() {
           )}
 
           {stage.s === "preview" && (
-            <Split visual={<ReceiptCard r={form} />}>
-              <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-muted">Claim preview</p>
+            <Split visual={<ReceiptCard r={form} signed={stage.claim.evidence === "merchant-signed"} />}>
+              <EvidenceNote kind={stage.claim.evidence} />
+              <p className="mt-8 font-mono text-[0.7rem] uppercase tracking-[0.24em] text-muted">Claim preview</p>
               <ul className="mt-5 space-y-3">
+                {stage.claim.evidence === "merchant-signed" && <Check ok label="Merchant signature" note="Ed25519 · every field verified · simulated merchant" />}
                 <Check ok={stage.status !== 5} label="Attested" note={stage.claim.scheme === "ed25519" ? "Ed25519 · demo attester" : "ECDSA · demo attester"} />
                 <Check ok={stage.status !== 4} label="New receipt" note="Never claimed before" />
                 {stage.status === 4 || stage.status === 5 ? (
@@ -231,7 +315,7 @@ export function ScanFlow() {
                   </Button>
                 </>
               ) : (
-                <StatusProblem status={stage.status} onEdit={() => setStage({ s: "review", demo: false })} />
+                <StatusProblem status={stage.status} onEdit={() => setStage(stage.claim.evidence === "merchant-signed" ? { s: "choose" } : { s: "review", demo: false })} />
               )}
             </Split>
           )}
@@ -260,13 +344,13 @@ export function ScanFlow() {
             </div>
           )}
 
-          {stage.s === "done" && <Done brandName={brand.name} asset={brand.asset} assets={stage.assets} hash={stage.hash} vkind={vkind} onAgain={() => setStage({ s: "choose" })} />}
+          {stage.s === "done" && <Done evidence={stage.claim.evidence} brandName={brand.name} asset={brand.asset} assets={stage.assets} hash={stage.hash} vkind={vkind} onAgain={() => setStage({ s: "choose" })} />}
 
           {stage.s === "error" && (
             <ErrorPanel
               error={stage.error}
               onRetry={() => (stage.claim ? claimOwnership(stage.claim, stage.reward ?? 0n) : setStage({ s: "review", demo: false }))}
-              onEdit={() => setStage({ s: "review", demo: false })}
+              onEdit={() => setStage(stage.error.kind === "receipt" || stage.claim?.evidence === "merchant-signed" ? { s: "choose" } : { s: "review", demo: false })}
             />
           )}
         </motion.div>
@@ -277,7 +361,18 @@ export function ScanFlow() {
 
 // ------------------------------------------------------------------ pieces
 
-function Choice({ title, body, onClick, icon, accent }: { title: string; body: string; onClick: () => void; icon: string; accent?: boolean }) {
+function EvidenceNote({ kind }: { kind: Evidence }) {
+  const e = EVIDENCE[kind];
+  return (
+    <div className="border-l-2 border-ink pl-4">
+      <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-muted">Evidence · tier {e.tier}</p>
+      <p className="mt-1 font-semibold">{e.label}</p>
+      <p className="mt-1 text-sm text-muted">{e.body}</p>
+    </div>
+  );
+}
+
+function Choice({ title, body, tag, onClick, icon, accent }: { title: string; body: string; tag: string; onClick: () => void; icon: string; accent?: boolean }) {
   return (
     <button type="button" onClick={onClick} className="group flex min-h-32 flex-row items-center gap-6 bg-paper p-6 text-left sm:min-h-56 sm:flex-col sm:items-start sm:justify-between sm:gap-0 sm:p-7 transition-colors duration-300 hover:bg-[#FBF8F1]">
       <svg viewBox="0 0 24 24" className={`h-8 w-8 ${accent ? "text-vermilion" : "text-ink"}`} fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
@@ -286,6 +381,7 @@ function Choice({ title, body, onClick, icon, accent }: { title: string; body: s
       <span>
         <span className="block font-display text-2xl font-bold">{title}</span>
         <span className="mt-2 block text-sm text-muted">{body}</span>
+        <span className="mt-3 block font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">{tag}</span>
         <span className="mt-5 block h-px w-10 bg-ink transition-all duration-500 group-hover:w-20 group-hover:bg-vermilion" aria-hidden="true" />
       </span>
     </button>
@@ -416,7 +512,9 @@ function ErrorPanel({ error, onRetry, onEdit }: { error: ClaimError; onRetry: ()
         ? { t: "Ownership wasn't created.", b: "The request was declined in your wallet. Nothing was spent." }
         : error.kind === "status"
           ? { t: CLAIM_STATUS[error.status]?.title ?? "Not eligible", b: CLAIM_STATUS[error.status]?.body ?? "" }
-          : { t: "Something interrupted the claim.", b: "Your purchase wasn't used. You can try again." };
+          : error.kind === "receipt"
+            ? { t: error.message, b: "Nothing was claimed." }
+            : { t: "Something interrupted the claim.", b: "Your purchase wasn't used. You can try again." };
   return (
     <div className="max-w-xl" role="alert">
       <p className="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-vermilion-deep">Not completed</p>
@@ -428,7 +526,9 @@ function ErrorPanel({ error, onRetry, onEdit }: { error: ClaimError; onRetry: ()
             Get testnet ETH <Arrow />
           </ButtonLink>
         )}
-        {error.kind === "status" || error.kind === "other" ? (
+        {error.kind === "receipt" ? (
+          <Button onClick={onEdit}>Start over</Button>
+        ) : error.kind === "status" || error.kind === "other" ? (
           <Button onClick={onEdit}>Edit receipt</Button>
         ) : (
           <Button variant={error.kind === "funds" ? "ghost" : "ink"} onClick={onRetry}>
@@ -446,7 +546,7 @@ function ErrorPanel({ error, onRetry, onEdit }: { error: ClaimError; onRetry: ()
   );
 }
 
-function Done({ brandName, asset, assets, hash, vkind, onAgain }: { brandName: string; asset: string; assets: bigint; hash: Hex; vkind: string; onAgain: () => void }) {
+function Done({ evidence, brandName, asset, assets, hash, vkind, onAgain }: { evidence: Evidence; brandName: string; asset: string; assets: bigint; hash: Hex; vkind: string; onAgain: () => void }) {
   return (
     <div className="grid items-center gap-12 md:grid-cols-[1fr_1.1fr]">
       <div className="relative grid place-items-center py-10">
@@ -461,6 +561,7 @@ function Done({ brandName, asset, assets, hash, vkind, onAgain }: { brandName: s
         <p className="mt-1 font-mono text-xs text-muted">
           {units(assets).toLocaleString("en-IN", { maximumFractionDigits: 4 })} {asset} of demo exposure · confirmed on Robinhood testnet
         </p>
+        <p className="mt-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted">Evidence: {EVIDENCE[evidence].label}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <ButtonLink href={getTransactionUrl(hash)} external>
             View transaction <Arrow />

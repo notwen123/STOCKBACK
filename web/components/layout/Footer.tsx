@@ -7,6 +7,7 @@ const PRODUCT = [
   ["How it works", "/how-it-works"],
   ["Brands", "/supported-brands"],
   ["About", "/about"],
+  ["Merchant demo", "/merchant"],
   ["Open app", "/app/dashboard"],
 ] as const;
 
