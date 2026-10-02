@@ -11,7 +11,7 @@ const numeric = IBM_Plex_Mono({ weight: ["400", "500"], subsets: ["latin"], vari
 export const metadata: Metadata = {
   title: { default: "STOCKBACK — Scan. Prove. Own.", template: "%s · STOCKBACK" },
   description:
-    "STOCKBACK turns verified purchases into on-chain ownership rewards through brand vaults on Robinhood Chain testnet. Demo assets only.",
+    "STOCKBACK turns attested purchase receipts into on-chain ownership rewards through brand vaults on Robinhood Chain testnet. Demo assets only.",
 };
 
 export const viewport: Viewport = { themeColor: "#F4EFE3" };

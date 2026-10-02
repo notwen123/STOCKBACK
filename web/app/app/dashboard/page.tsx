@@ -37,7 +37,7 @@ export default function Dashboard() {
               ))}
             </ul>
           ) : (
-            !portfolio.isLoading && <div className="mt-4"><Empty title="Nothing owned yet." body="Your first verified purchase will appear here as brand-vault shares." /></div>
+            !portfolio.isLoading && <div className="mt-4"><Empty title="Nothing owned yet." body="Your first claimed purchase will appear here as brand-vault shares." /></div>
           )}
         </section>
         <section aria-labelledby="act-h">

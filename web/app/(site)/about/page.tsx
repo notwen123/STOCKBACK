@@ -11,7 +11,7 @@ const CHAPTERS = [
     t: "Why STOCKBACK exists",
     b: [
       "Every day people fund the brands they love: coffee in the morning, shoes for the season, a new phone every few years. That spending builds companies, but the customer keeps nothing except a receipt.",
-      "STOCKBACK starts from a simple idea: a verified purchase can become a small, real stake in what you buy.",
+      "STOCKBACK starts from a simple idea: an attested purchase can become a small stake in what you buy.",
     ],
   },
   {
@@ -24,12 +24,13 @@ const CHAPTERS = [
     t: "The protocol",
     b: [
       "Evidence stays off-chain. An attester signs a claim that contains only hashes. On-chain, one transaction checks the signature, burns a nullifier so the receipt can never count twice, applies eligibility and reward rules, and deposits shares into the brand's vault in your name.",
+      "Evidence comes in tiers. A merchant-signed receipt is checked against the merchant's key before the attester signs, so no field can be changed after the sale; in this demo the merchant is simulated. A photo or typed receipt is only attested: the attester signs what it was given. Proof taken from the payment or order source itself is on the roadmap, not built.",
     ],
   },
   {
     t: "Why proof matters",
     b: [
-      "Rewards without proof invite fraud; proof without limits invites abuse. STOCKBACK separates the two. Attestations prove the purchase, while caps and budgets bound what any wallet or brand can earn. We are explicit about the limits: a nullifier stops replay, not someone with many wallets.",
+      "Rewards without proof invite fraud; proof without limits invites abuse. STOCKBACK separates the two. A merchant signature shows a receipt is unaltered; a photo attestation does not show a purchase happened, and AI can now forge receipt photos convincingly. Caps and budgets bound what any wallet or brand can earn either way. We are explicit about the limits: a nullifier stops the same receipt counting twice, not someone with many wallets and many receipts.",
     ],
   },
   {

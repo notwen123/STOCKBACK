@@ -11,7 +11,7 @@ export default function Activity() {
     <div className="mx-auto max-w-3xl">
       <Muted>Activity</Muted>
       <h1 className="mt-3 font-display text-4xl font-bold sm:text-5xl">Your ledger.</h1>
-      <p className="mt-3 text-sm text-muted">Every verified purchase, read from the registry&apos;s events on Robinhood testnet.</p>
+      <p className="mt-3 text-sm text-muted">Every claimed purchase, read from the registry&apos;s events on Robinhood testnet.</p>
       <div className="mt-12">
         {isLoading ? (
           <p className="breathe text-muted">Reading Robinhood testnet…</p>
@@ -20,7 +20,7 @@ export default function Activity() {
         ) : data?.length ? (
           <ActivityTimeline items={data} />
         ) : (
-          <Empty title="No activity yet." body="Your verified purchases will appear here." cta={<ScanLink />} />
+          <Empty title="No activity yet." body="Your claimed purchases will appear here." cta={<ScanLink />} />
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Petals } from "@/components/art/Art";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { Reveal, RevealLines } from "@/components/motion/Motion";
@@ -6,6 +7,7 @@ import { Arrow, ButtonLink, Eyebrow } from "@/components/ui/Button";
 import { BRANDS } from "@/lib/brands";
 import { getOnchainBenchmark } from "@/lib/benchmarks";
 import { GITHUB_URL } from "@/lib/chain";
+import { EVIDENCE } from "@/lib/evidence";
 import { LivePortfolioPreview } from "./LivePortfolioPreview";
 
 function SectionHead({ eyebrow, title, className }: { eyebrow: string; title: React.ReactNode[]; className?: string }) {
@@ -169,8 +171,34 @@ export function Ownership() {
   );
 }
 
+/** What each kind of proof actually establishes. Kept honest on purpose. */
+export function Evidence() {
+  return (
+    <Wrap label="Evidence" className="py-16 sm:py-24">
+      <SectionHead eyebrow="Evidence" title={["Not every proof", "proves the same thing."]} />
+      <ol className="mt-12 grid gap-px bg-ink/10 md:grid-cols-3">
+        {Object.values(EVIDENCE).map((e, i) => (
+          <Reveal as="li" key={e.label} delay={i * 0.08} className={`bg-paper p-7 ${e.status === "Roadmap" ? "text-muted" : ""}`}>
+            <div className="flex items-center justify-between">
+              <span className="font-display text-5xl font-extrabold text-vermilion/90">{e.tier}</span>
+              <span className={`border px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] ${e.status === "Roadmap" ? "border-dashed border-ink/30" : "border-ink/40 text-ink"}`}>{e.status}</span>
+            </div>
+            <p className="mt-6 font-display text-xl font-bold text-ink">{e.label}</p>
+            <p className="mt-2 text-sm leading-relaxed">{e.body}</p>
+          </Reveal>
+        ))}
+      </ol>
+      <Reveal>
+        <Link className="ink-link mt-8 inline-block font-mono text-xs uppercase tracking-[0.18em]" href="/merchant">
+          Try the simulated merchant POS →
+        </Link>
+      </Reveal>
+    </Wrap>
+  );
+}
+
 export function Security() {
-  const items = ["Replay-proof", "Capped rewards", "On-chain eligibility", "Verified attesters", "Admin-less vaults", "Testnet-guarded"];
+  const items = ["One claim per receipt", "Capped rewards", "On-chain eligibility", "Merchant signatures checked", "Admin-less vaults", "Testnet only"];
   return (
     <Wrap label="Security" className="py-16 sm:py-20">
       <div className="flex flex-col gap-8 border-y border-ink/15 py-10 lg:flex-row lg:items-center lg:justify-between">

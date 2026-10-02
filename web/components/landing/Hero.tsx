@@ -71,7 +71,7 @@ export function Hero() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 1.2, ease: EASE }}>
             <p className="mt-7 max-w-md text-lg leading-relaxed text-ink sm:text-xl">Turn everyday purchases into programmable ownership.</p>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-charcoal">
-              STOCKBACK connects verified purchases with on-chain ownership rewards, held in brand vaults you control.
+              STOCKBACK connects attested purchase receipts with on-chain ownership rewards, held in brand vaults you control.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <ButtonLink href="/app/scan">
