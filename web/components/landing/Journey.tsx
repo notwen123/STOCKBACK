@@ -1,7 +1,6 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import Image from "next/image";
 import { useRef, useState } from "react";
 import { InkSun, Petals } from "@/components/art/Art";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -82,39 +81,11 @@ export function Journey() {
           {/* stage */}
           <div className="relative order-1 mx-auto flex h-[46vh] w-full max-w-[420px] items-center justify-center lg:order-2 lg:h-[64vh]">
             <AnimatePresence mode="wait">
-              {step === 0 ? (
-                <motion.div
-                  key="photo"
-                  initial={{ opacity: 0, y: 50, rotate: -6 }}
-                  animate={{ opacity: 1, y: 0, rotate: -3 }}
-                  exit={{ opacity: 0, scale: 0.85, rotateX: 25, filter: "blur(8px)" }}
-                  transition={{ duration: 0.7, ease: EASE }}
-                  className="relative h-full max-h-[560px] [perspective:1200px]"
-                >
-                  <Image
-                    src="/art/receipt-real.webp"
-                    alt="A paper Nike receipt from Nike Store, Bengaluru, for ₹2,000 paid by UPI"
-                    width={700}
-                    height={1397}
-                    sizes="(min-width: 1024px) 300px, 45vw"
-                    className="h-full w-auto drop-shadow-[0_40px_40px_rgba(23,23,23,.28)]"
-                  />
-                  {!reduce && (
-                    <>
-                      <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-transparent via-vermilion/20 to-transparent" style={{ ["--scan-h" as string]: "90%" }} />
-                      <div className="scan-line pointer-events-none absolute inset-x-0 top-8 h-px bg-vermilion/80" style={{ ["--scan-h" as string]: "90%" }} />
-                    </>
-                  )}
-                  {/* viewfinder corners */}
-                  {["left-0 top-0 border-l-2 border-t-2", "right-0 top-0 border-r-2 border-t-2", "bottom-0 left-0 border-b-2 border-l-2", "bottom-0 right-0 border-b-2 border-r-2"].map((c) => (
-                    <span key={c} aria-hidden="true" className={`absolute -m-3 h-7 w-7 border-vermilion ${c}`} />
-                  ))}
-                </motion.div>
-              ) : step < 3 ? (
+              {step < 3 ? (
                 <motion.div
                   key="receipt"
-                  initial={{ opacity: 0, y: 30, rotateX: -20, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" }}
+                  initial={{ opacity: 0, y: 40, rotate: -4 }}
+                  animate={{ opacity: 1, y: 0, rotate: step === 0 ? -2 : 0 }}
                   exit={{ opacity: 0, scale: 0.4, rotate: 10, filter: "blur(6px)" }}
                   transition={{ duration: 0.7, ease: EASE }}
                   className="relative w-full max-w-[360px] bg-[#FBF8F1] px-7 pb-9 pt-7 font-mono text-[0.75rem] shadow-[0_50px_70px_-40px_rgba(23,23,23,.55)]"
@@ -132,6 +103,12 @@ export function Journey() {
                     <span>TOTAL</span>
                     <span className="tabular">₹2,000.00</span>
                   </div>
+                  {step === 0 && !reduce && (
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                      <div className="scan-line absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-transparent via-vermilion/15 to-transparent" style={{ ["--scan-h" as string]: "260px" }} />
+                      <div className="scan-line absolute inset-x-0 top-6 h-px bg-vermilion" style={{ ["--scan-h" as string]: "260px" }} />
+                    </div>
+                  )}
                   <AnimatePresence>
                     {step >= 1 && (
                       <motion.p

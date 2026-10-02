@@ -152,6 +152,19 @@ body {
 .petal {
   animation: petal var(--fall, 14s) linear var(--delay, 0s) infinite;
 }
+/* side-to-side flutter, layered on top of the fall */
+@keyframes petal-sway {
+  0%,
+  100% {
+    transform: translate3d(-10px, 0, 0) rotate(-25deg);
+  }
+  50% {
+    transform: translate3d(12px, 0, 0) rotate(30deg);
+  }
+}
+.petal-sway {
+  animation: petal-sway var(--sway-dur, 3s) ease-in-out infinite;
+}
 
 /* Receipt scanner line */
 @keyframes scan {
@@ -207,6 +220,7 @@ body {
     scroll-behavior: auto !important;
   }
   .petal,
+  .petal-sway,
   .scan-line {
     display: none;
   }
@@ -219,6 +233,7 @@ html.motion-off *::after {
   transition-duration: 1ms !important;
 }
 html.motion-off .petal,
+html.motion-off .petal-sway,
 html.motion-off .scan-line {
   display: none;
 }

@@ -4,8 +4,8 @@ import { GITHUB_URL } from "@/lib/chain";
 
 export function Footer() {
   return (
-    <footer className="border-t border-ink/15 bg-paper-dark/40">
-      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-16 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
+    <footer>
+      <div className="mx-auto grid max-w-[1320px] gap-12 px-5 pb-16 pt-10 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3">
             <Seal size={34} />

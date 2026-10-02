@@ -134,30 +134,41 @@ export function BrushStroke({ className, style, delay = 900 }: P & { delay?: num
   );
 }
 
-const PETALS = [
-  { left: "12%", delay: "0s", fall: "15s", drift: "-80px", s: 1 },
-  { left: "34%", delay: "4s", fall: "18s", drift: "-140px", s: 0.8 },
-  { left: "58%", delay: "2s", fall: "16s", drift: "-60px", s: 0.7 },
-  { left: "76%", delay: "7s", fall: "20s", drift: "-160px", s: 1.1 },
-  { left: "90%", delay: "10s", fall: "17s", drift: "-100px", s: 0.9 },
-];
+// Deterministic pseudo-random (same on server and client, so no hydration mismatch).
+const rnd = (i: number, k: number) => {
+  const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
 
-/** A handful of drifting petals (hidden under reduced motion). */
-export function Petals({ className }: P) {
+/** Drifting blossom petals: each one falls while swaying (hidden under reduced motion). */
+export function Petals({ className, count = 5 }: P & { count?: number }) {
   return (
     <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className ?? ""}`} aria-hidden="true">
-      {PETALS.map((p, i) => (
-        <svg
-          key={i}
-          viewBox="0 0 12 16"
-          width={12 * p.s}
-          height={16 * p.s}
-          className="petal absolute top-0"
-          style={{ left: p.left, ["--delay" as string]: p.delay, ["--fall" as string]: p.fall, ["--drift" as string]: p.drift }}
-        >
-          <path d="M6 0C10 3 12 8 6 16 0 8 2 3 6 0z" fill="#E7B8B0" opacity=".85" />
-        </svg>
-      ))}
+      {Array.from({ length: count }, (_, i) => {
+        const s = 0.6 + rnd(i, 1) * 0.9;
+        return (
+          <span
+            key={i}
+            className="petal absolute top-0"
+            style={{
+              left: `${(i / count) * 100 + rnd(i, 2) * (100 / count)}%`,
+              ["--delay" as string]: `${-rnd(i, 3) * 18}s`,
+              ["--fall" as string]: `${13 + rnd(i, 4) * 10}s`,
+              ["--drift" as string]: `${-60 - rnd(i, 5) * 160}px`,
+            }}
+          >
+            <svg
+              viewBox="0 0 12 16"
+              width={12 * s}
+              height={16 * s}
+              className="petal-sway block"
+              style={{ ["--sway-dur" as string]: `${2.6 + rnd(i, 6) * 2.2}s`, opacity: 0.55 + rnd(i, 7) * 0.4 }}
+            >
+              <path d="M6 0C10 3 12 8 6 16 0 8 2 3 6 0z" fill={rnd(i, 8) > 0.35 ? "#E58A80" : "#C83A2F"} />
+            </svg>
+          </span>
+        );
+      })}
     </div>
   );
 }

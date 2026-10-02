@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Petals } from "@/components/art/Art";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { Reveal, RevealLines } from "@/components/motion/Motion";
 import { Arrow, ButtonLink, Eyebrow } from "@/components/ui/Button";
@@ -199,8 +200,9 @@ export function FinalCta() {
         alt=""
         fill
         sizes="100vw"
-        className="-z-10 object-cover object-center opacity-90 [mask-image:linear-gradient(to_bottom,transparent,black_14%,black_88%,transparent)]"
+        className="-z-10 object-cover object-center opacity-90 [mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,.25)_12%,black_32%,black_68%,rgba(0,0,0,.25)_88%,transparent_100%)]"
       />
+      <Petals count={18} />
       <div className="mx-auto flex min-h-[640px] max-w-[860px] flex-col items-center justify-center px-5 py-28 text-center sm:px-8 lg:min-h-[720px]">
         <h2 className="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-extrabold leading-[1]">
           <RevealLines lines={["Your next receipt", "could be your next", <span key="own">ownership<span className="text-vermilion">.</span></span>]} />
