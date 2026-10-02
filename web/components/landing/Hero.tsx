@@ -109,15 +109,16 @@ function PhoneComposition() {
         animate={{ opacity: 1, y: 0, rotate: 0 }}
         transition={{ duration: 1.4, delay: 0.6, ease: EASE }}
       >
-        <div className="float" style={{ ["--float-dur" as string]: "9s", ["--r" as string]: "-1deg" }}>
+        {/* Shadow lives on the wrapper so it follows the masked phone shape instead of being clipped into a box. */}
+        <div className="float drop-shadow-[0_40px_45px_rgba(23,23,23,.28)]" style={{ ["--float-dur" as string]: "9s", ["--r" as string]: "-1deg" }}>
           <Image
-            src="/art/hero-phone.webp"
+            src="/art/hero-phone-bw.webp"
             alt="A hand holding a phone that is scanning a Nike receipt for ₹2,000 dated 28 Sep 2026"
             width={900}
             height={1147}
             priority
             sizes="(min-width: 1024px) 460px, 80vw"
-            className="h-auto w-full drop-shadow-[0_50px_60px_rgba(23,23,23,.35)] [mask-image:linear-gradient(to_bottom,black_78%,transparent)]"
+            className="h-auto w-full [mask-image:linear-gradient(to_bottom,black_78%,transparent)]"
           />
         </div>
       </motion.div>
