@@ -855,3 +855,79 @@ D(11, "roadmap-close", slide(11, "Next", `
     <div style="margin-left:auto">${seal(150, { rotate: -8 })}</div>
   </div>`,
   { title: "Where it goes next." }));
+
+// ============================================================== YOUTUBE THUMBNAILS (1280×720, rendered at 2x)
+const T = [1280, 720];
+const splat = (n, cx, cy, r0, r1, sz, seed = 1) => Array.from({ length: n }, (_, i) => {
+  const R = (k) => { const x = Math.sin(i * 127.1 + k * 311.7 + seed * 17) * 43758.5453; return x - Math.floor(x); };
+  const a = R(1) * Math.PI * 2, r = r0 + (r1 - r0) * Math.pow(R(2), 0.7), z = sz * (0.25 + 0.75 * R(3));
+  return `<ellipse cx="${cx + Math.cos(a) * r}" cy="${cy + Math.sin(a) * r}" rx="${z}" ry="${z * 0.8}" transform="rotate(${(a * 180) / Math.PI} ${cx + Math.cos(a) * r} ${cy + Math.sin(a) * r})" fill="#c83a2f"/>`;
+}).join("");
+
+// A — the hook: a forged receipt, the claim in giant type
+add(
+  "thumbnail/A-this-receipt-is-fake",
+  ...T,
+  page(
+    `<div class="fill" style="background:radial-gradient(ellipse 80% 90% at 30% 50%,#f7f2e7 0%,#e4dac6 100%)"></div>
+    <div class="abs receipt" style="left:60px;top:80px;width:450px;padding:36px 38px 44px;font-size:20px;transform:rotate(-6deg)">
+      <p style="text-align:center;font:800 40px var(--display);letter-spacing:.22em">RECEIPT</p>
+      <div class="dash" style="margin:16px 0"></div>
+      ${receiptLines([["Store", "042 Mumbai"], ["Receipt", "INV-58213"], ["Date", "02 OCT 2026"], "---"])}
+      <div class="row" style="font-size:34px;align-items:center;position:relative"><span>TOTAL</span>
+        <span style="position:relative;color:var(--shu-deep);font-weight:500">₹20,000
+          <svg class="abs" style="left:-34px;top:-30px;overflow:visible" width="230" height="100" viewBox="0 0 330 120"><path d="M18 66C14 30 98 10 178 12c86 2 140 22 136 54-4 34-82 50-164 48C66 112 22 96 18 66z" fill="none" stroke="#c83a2f" stroke-width="9" stroke-linecap="round"/></svg></span></div>
+      <div style="margin-top:28px;height:62px;background:repeating-linear-gradient(90deg,#171717 0 3px,transparent 3px 6px,#171717 6px 7px,transparent 7px 11px)"></div>
+      <div class="abs" style="right:10px;bottom:-40px;transform:rotate(14deg)">
+        <div style="border:8px solid var(--shu);padding:4px 22px;font:800 64px var(--display);color:var(--shu);letter-spacing:.06em;border-radius:12px;background:rgba(244,239,227,.85)">FAKE</div></div>
+    </div>
+    <div class="abs" style="left:620px;top:84px;right:40px">
+      <h1 class="display" style="font-size:124px;line-height:.9">This receipt<br>is <span style="color:var(--shu)">fake.</span></h1>
+      <p style="margin-top:30px;font:600 40px var(--sans);line-height:1.15">You couldn't tell.</p>
+    </div>
+    <div class="abs" style="left:620px;bottom:44px;display:flex;align-items:center;gap:18px">${seal(70, { rotate: -8 })}<span style="font:700 34px var(--display);letter-spacing:.2em">STOCKBACK</span></div>`,
+  ),
+);
+
+// B — the reveal: black field, red seal, the promise
+add(
+  "thumbnail/B-photos-lie",
+  ...T,
+  page(
+    `<div class="fill" style="background:#0f0f0f"></div>
+    <svg class="abs" style="left:0;top:0" width="1280" height="720">${splat(46, 330, 360, 170, 420, 20, 3)}</svg>
+    <div class="abs" style="left:110px;top:140px">${seal(440, { rotate: -10, paper: "#0f0f0f" })}</div>
+    <div class="abs" style="left:660px;top:70px;right:40px">
+      <h1 class="display" style="font-size:124px;line-height:.9;color:var(--washi)">Photos<br>lie.</h1>
+      <h1 class="display" style="font-size:124px;line-height:.9;color:var(--shu);margin-top:16px">Seals<br>don't.</h1>
+    </div>
+    <p class="abs" style="left:664px;bottom:34px;font:600 28px var(--sans);color:rgba(244,239,227,.7);letter-spacing:.04em">STOCKBACK · live on Arbitrum</p>`,
+    { cls: "" },
+  ),
+);
+
+// C — the Claude / motion-design angle: code on the left, the film frame on the right
+const code = `<span style="color:#8a8378">// one frame of the film, as code</span>
+<span style="color:#e58a80">const</span> slam = P(t, <span style="color:#d9b26a">39.0</span>, <span style="color:#d9b26a">39.25</span>);
+<span style="color:#e58a80">const</span> [sx, sy] = shake(t, <span style="color:#d9b26a">39.25</span>, <span style="color:#d9b26a">26</span>);
+css($(<span style="color:#9fc28a">"bigSeal"</span>), {
+  transform: <span style="color:#9fc28a">\`scale(\${slam})\`</span>
+});
+reveal = A(t, <span style="color:#d9b26a">39.25</span>, <span style="color:#d9b26a">40.1</span>, E.outExpo);
+<span style="color:#e58a80">await</span> page.screenshot({ frame });`;
+add(
+  "thumbnail/C-this-film-is-code",
+  ...T,
+  page(
+    `<div class="fill" style="background:var(--washi)"></div>
+    <div class="abs" style="left:0;top:0;width:560px;height:720px;background:#141414;padding:150px 40px 0 44px">
+      <pre class="mono" style="font-size:16px;line-height:1.8;color:#ece6d8;white-space:pre">${code}</pre>
+    </div>
+    <img class="abs" src="art/thumb-seal.jpg" style="left:540px;top:120px;width:700px;height:394px;object-fit:cover;box-shadow:0 40px 70px -30px rgba(0,0,0,.6);transform:rotate(2deg);border:8px solid #fbf8f1">
+    <svg class="abs" style="left:470px;top:300px;overflow:visible" width="140" height="60" viewBox="0 0 150 40"><path d="M4 22c40-8 80-10 128-4" stroke="#c83a2f" stroke-width="9" stroke-linecap="round" fill="none"/><path d="M114 4l26 15-28 14" stroke="#c83a2f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    <h1 class="abs display" style="left:44px;top:40px;font-size:88px;color:var(--washi);line-height:1">This film</h1>
+    <h1 class="abs display" style="left:600px;top:560px;font-size:96px;line-height:1">is <span style="color:var(--shu)">code.</span></h1>
+    <p class="abs" style="left:44px;bottom:40px;font:600 26px var(--sans);color:rgba(236,230,216,.8)">Made with Claude Code</p>
+    <div class="abs" style="right:44px;top:34px;display:flex;align-items:center;gap:12px">${seal(48, { ink: false })}<span style="font:700 24px var(--display);letter-spacing:.2em">STOCKBACK</span></div>`,
+  ),
+);
