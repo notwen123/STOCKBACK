@@ -165,87 +165,97 @@ export function TechnicalProof() {
 // 05 -------------------------------------------------------------------------
 const fmt = (n: number) => n.toLocaleString("en-US");
 
+const CAP = 32_000_000; // Robinhood testnet maxTxGasLimit (ArbGasInfo), read on-chain
+const compact = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : `${Math.round(n / 1e3)}k`);
+
 export async function StylusSection() {
   const bench = await getOnchainBenchmark();
-  const max = bench ? Math.max(...bench.rows.flatMap((r) => [r.solidity ?? 32_000_000, r.stylus ?? 0])) : 1;
+  const best = bench?.rows.reduce((m, r) => (r.solidity && r.stylus ? Math.max(m, r.solidity / r.stylus) : m), 0) ?? 0;
+  const top = CAP * 1.18;
   return (
     <div className="bg-ink text-paper">
-      <Wrap label="Why Stylus" className="py-28 sm:py-40">
-        <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr]">
+      <Wrap label="Why Stylus" className="py-28 sm:py-36">
+        <div className="grid items-end gap-16 lg:grid-cols-[0.85fr_1.15fr]">
           <div>
             <Reveal>
               <p className="flex items-center gap-4 font-mono text-[0.7rem] uppercase tracking-[0.24em] text-stone">
                 <span className="text-vermilion">05</span>
                 <span className="h-px w-10 bg-paper/30" />
-                Why Rust?
+                Why Stylus
               </p>
             </Reveal>
-            <h2 className="mt-6 font-display text-[clamp(2.3rem,5.4vw,4.6rem)] font-bold leading-[1.02]">
-              <RevealLines lines={["Verification the", "EVM can't do alone."]} />
+            <h2 className="mt-6 font-display text-[clamp(2.3rem,4.6vw,4rem)] font-bold leading-[1.02]">
+              <RevealLines lines={["Verified in Rust."]} />
             </h2>
-            <Reveal className="mt-8 max-w-md space-y-4 leading-relaxed text-paper/80">
-              <p>
-                Attesters sign purchases with Ed25519. The EVM has no Ed25519 precompile, so Solidity must emulate SHA-512 and curve
-                arithmetic in bytecode.
-              </p>
-              <p>STOCKBACK verifies those signatures in compiled Rust on Arbitrum Stylus, and keeps settlement and accounting in Solidity.</p>
-              <p className="text-sm text-stone">
-                Standard Ethereum signatures (ECDSA) remain cheaper than both. Stylus earns its place specifically for signatures the EVM lacks.
-              </p>
-            </Reveal>
-          </div>
-          <Reveal delay={0.15}>
             {bench ? (
-              <figure>
-                <figcaption className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-stone">
-                  Gas to verify N attestations · measured on Robinhood Chain testnet
-                </figcaption>
-                <div className="mt-8 space-y-7">
+              <Reveal delay={0.2} className="mt-10">
+                <p className="font-display text-[clamp(5rem,12vw,9rem)] font-extrabold leading-none tabular">
+                  {best.toFixed(1)}
+                  <span className="text-vermilion">×</span>
+                </p>
+                <p className="mt-3 max-w-xs text-paper/75">less gas than Solidity to verify Ed25519 signatures.</p>
+              </Reveal>
+            ) : (
+              <p className="mt-10 font-display text-3xl">Benchmark in progress</p>
+            )}
+          </div>
+
+          {bench && (
+            <Reveal delay={0.15}>
+              <figure aria-label="Gas used to verify 1, 10, 50 and 100 signatures, Solidity versus Stylus">
+                <div className="relative h-[300px] border-b border-paper/20">
+                  {/* per-transaction gas cap */}
+                  <div className="absolute inset-x-0 border-t border-dashed border-paper/35" style={{ bottom: `${(CAP / top) * 100}%` }}>
+                    <span className="absolute -top-5 left-0 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-stone">32M tx limit</span>
+                  </div>
+                  <div className="absolute inset-0 grid grid-cols-4 items-end gap-4 px-2 sm:gap-8 sm:px-6">
+                    {bench.rows.map((r) => (
+                      <div key={r.batch} className="flex h-full items-end justify-center gap-1.5 sm:gap-2.5">
+                        <Column value={r.solidity} top={top} tone="stone" label={`Solidity, ${r.batch} signatures`} />
+                        <Column value={r.stylus} top={top} tone="red" label={`Stylus, ${r.batch} signatures`} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-4 gap-4 px-2 text-center font-mono text-xs text-stone sm:gap-8 sm:px-6">
                   {bench.rows.map((r) => (
-                    <div key={r.batch}>
-                      <div className="flex items-baseline justify-between font-mono text-xs text-stone">
-                        <span>
-                          {r.batch} {r.batch === 1 ? "signature" : "signatures"}
-                        </span>
-                        {r.solidity && r.stylus && <span className="text-paper">{(r.solidity / r.stylus).toFixed(1)}× less gas with Stylus</span>}
-                      </div>
-                      <div className="mt-2 space-y-1.5">
-                        <Bar label="Solidity" value={r.solidity} max={max} tone="stone" />
-                        <Bar label="Stylus" value={r.stylus} max={max} tone="red" />
-                      </div>
-                    </div>
+                    <span key={r.batch}>{r.batch}</span>
                   ))}
                 </div>
-                <p className="mt-8 text-xs leading-relaxed text-stone">
-                  eth_estimateGas with byte-identical calldata, both verifiers deployed on chain 46630. Solidity at 100 signatures exceeds the
-                  32M per-transaction gas cap.{" "}
-                  <a className="ink-link text-paper" href={`${GITHUB_URL}/blob/main/benchmarks/results/BENCHMARKS.md`} target="_blank" rel="noreferrer">
-                    Methodology & raw data
-                  </a>
-                </p>
+                <figcaption className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-stone">
+                  <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 bg-stone" />Solidity</span>
+                  <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 bg-vermilion" />Stylus</span>
+                  <span className="normal-case tracking-normal">signatures per tx · Robinhood testnet ·{" "}
+                    <a className="ink-link text-paper" href={`${GITHUB_URL}/blob/main/benchmarks/results/BENCHMARKS.md`} target="_blank" rel="noreferrer">data</a>
+                  </span>
+                </figcaption>
               </figure>
-            ) : (
-              <p className="font-display text-3xl">Benchmark in progress</p>
-            )}
-          </Reveal>
+            </Reveal>
+          )}
         </div>
       </Wrap>
     </div>
   );
 }
 
-function Bar({ label, value, max, tone }: { label: string; value: number | null; max: number; tone: "stone" | "red" }) {
+/** One gas column. Null = did not fit in a transaction: drawn hatched, breaking through the cap line. */
+function Column({ value, top, tone, label }: { value: number | null; top: number; tone: "stone" | "red"; label: string }) {
+  const h = value ? Math.max((value / top) * 100, 1.2) : 100;
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-16 font-mono text-[0.65rem] uppercase tracking-wider text-stone">{label}</span>
-      <div className="relative h-2.5 flex-1 bg-paper/10">
-        {value ? (
-          <div className={`h-full origin-left ${tone === "red" ? "bg-vermilion" : "bg-stone"}`} style={{ transform: `scaleX(${value / max})` }} />
-        ) : (
-          <div className="h-full w-full bg-[repeating-linear-gradient(45deg,rgba(184,176,162,.35)_0_6px,transparent_6px_12px)]" />
-        )}
-      </div>
-      <span className="w-28 text-right font-mono text-xs tabular">{value ? fmt(value) : "exceeds cap"}</span>
+    <div className="group relative flex h-full w-5 items-end sm:w-8" title={`${label}: ${value ? fmt(value) + " gas" : "exceeds the 32M tx limit"}`}>
+      <div
+        className={`w-full origin-bottom transition-transform duration-500 group-hover:scale-x-110 ${
+          !value
+            ? "bg-[repeating-linear-gradient(45deg,rgba(184,176,162,.55)_0_5px,transparent_5px_10px)]"
+            : tone === "red"
+              ? "bg-vermilion"
+              : "bg-stone"
+        }`}
+        style={{ height: `${h}%` }}
+      />
+      <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[0.6rem] text-paper opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        {value ? compact(value) : "✕"}
+      </span>
     </div>
   );
 }
