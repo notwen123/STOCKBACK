@@ -255,32 +255,21 @@ export function Ownership() {
   return (
     <Wrap id="ownership" label="Ownership" className="py-28 sm:py-40">
       <SectionHead n="06" eyebrow="Ownership" title={["Not points.", "Ownership."]} />
-      <div className="mt-20 grid gap-16 sm:grid-cols-3 sm:gap-8">
-        {BRANDS.map((b, i) => {
-          return (
-            <Reveal key={b.id} delay={i * 0.12}>
-              <article
-                className="float group relative flex flex-col items-center bg-[#FBF8F1] px-8 pb-9 pt-12 text-center shadow-[0_40px_60px_-45px_rgba(23,23,23,.5)] transition-transform duration-500 hover:-translate-y-1.5"
-                style={{ ["--float-dur" as string]: `${8 + i}s` }}
-              >
-                <BrandMark brand={b} className="h-20 w-28 text-ink" />
-                <h3 className="mt-8 font-display text-4xl font-extrabold tracking-[0.06em]">{b.name}</h3>
-                <span className="mt-6 border border-vermilion/50 px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-vermilion-deep">Demo asset</span>
-                <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-muted">{b.category}</p>
-                <div className="mt-5 flex w-full max-w-[16rem] justify-between border-t border-ink/15 pt-4 font-mono text-xs">
-                  <span className="text-left">
-                    {b.share}
-                    <span className="block text-muted">vault share</span>
-                  </span>
-                  <span className="text-right">
-                    {b.asset}
-                    <span className="block text-muted">underlying</span>
-                  </span>
-                </div>
-              </article>
-            </Reveal>
-          );
-        })}
+      <div className="mt-20 grid gap-14 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-ink/15">
+        {BRANDS.map((b, i) => (
+          <Reveal key={b.id} delay={i * 0.12}>
+            <article className="group flex flex-col items-center px-6 text-center">
+              <BrandMark brand={b} className="h-16 w-24 text-ink transition-transform duration-700 ease-[var(--ease-ink)] group-hover:-translate-y-1.5" />
+              <h3 className="mt-7 font-display text-4xl font-extrabold tracking-[0.06em]">{b.name}</h3>
+              <p className="mt-3 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-muted">
+                {b.category} · <span className="text-vermilion-deep">Demo asset</span>
+              </p>
+              <p className="mt-5 font-mono text-xs text-charcoal">
+                {b.share} <span className="text-muted">vault share</span> · {b.asset} <span className="text-muted">underlying</span>
+              </p>
+            </article>
+          </Reveal>
+        ))}
       </div>
       <Reveal className="mx-auto mt-16 max-w-2xl text-center text-sm leading-relaxed text-muted">
         <p>
@@ -350,37 +339,31 @@ export function Security() {
 export function FinalCta() {
   return (
     <section aria-label="Get started" className="relative isolate overflow-hidden">
-      {/* Ink landscape panorama: open paper sky above for the statement, mountains and blossoms below. */}
-      <Image
-        src="/art/cta-landscape.webp"
-        alt=""
-        fill
-        sizes="100vw"
-        className="-z-10 object-contain object-bottom [mask-image:linear-gradient(to_bottom,transparent,black_18%)] md:object-cover md:object-[50%_85%]"
-      />
-      <div className="mx-auto flex max-w-[900px] flex-col items-center justify-start px-5 pb-56 pt-24 text-center sm:px-8 md:min-h-[78vh] md:pb-[34vh] md:pt-32">
-        <h2 className="font-display text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[0.98]">
+      <div className="mx-auto max-w-[900px] px-5 pb-10 pt-28 text-center sm:px-8 sm:pt-32">
+        <h2 className="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-extrabold leading-[1]">
           <RevealLines lines={["Your next receipt", "could be your next", <span key="own">ownership<span className="text-vermilion">.</span></span>]} />
         </h2>
-        <Reveal delay={0.3} className="mt-12 flex flex-wrap justify-center gap-4">
+        <Reveal delay={0.3} className="mt-10 flex flex-wrap justify-center gap-4">
           <ButtonLink href="/app/dashboard">
             Start Stockback <Arrow />
           </ButtonLink>
-          <ButtonLink href="/about" variant="ghost" className="bg-paper/70 backdrop-blur-sm">
+          <ButtonLink href="/about" variant="ghost">
             Read the protocol
           </ButtonLink>
         </Reveal>
       </div>
+      {/* Ink-and-blossom stream, kept quiet: it frames the statement instead of competing with it. */}
+      <Reveal y={30} delay={0.2}>
+        <Image
+          src="/art/blossom-stream.webp"
+          alt=""
+          width={1600}
+          height={534}
+          sizes="(min-width: 1200px) 1100px, 100vw"
+          className="mx-auto -mt-6 h-auto w-full max-w-[1100px] opacity-60 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+        />
+      </Reveal>
     </section>
-  );
-}
-
-/** Ink-and-blossom stream (transparent artwork) used as a band between sections. */
-export function InkBand() {
-  return (
-    <div aria-hidden="true" className="relative mx-auto w-full max-w-[1600px]">
-      <Image src="/art/blossom-stream.webp" alt="" width={1600} height={534} sizes="100vw" className="h-auto w-full" />
-    </div>
   );
 }
 
