@@ -251,29 +251,20 @@ function Bar({ label, value, max, tone }: { label: string; value: number | null;
 }
 
 // 06 -------------------------------------------------------------------------
-const PLINTH: Record<string, { src: string; w: number; h: number }> = {
-  NIKE: { src: "/art/plinth-podium.webp", w: 400, h: 146 },
-  AAPL: { src: "/art/plinth-halo.webp", w: 510, h: 245 },
-  SBUX: { src: "/art/plinth-sakura.webp", w: 600, h: 290 },
-};
-
 export function Ownership() {
   return (
     <Wrap id="ownership" label="Ownership" className="py-28 sm:py-40">
       <SectionHead n="06" eyebrow="Ownership" title={["Not points.", "Ownership."]} />
       <div className="mt-20 grid gap-16 sm:grid-cols-3 sm:gap-8">
         {BRANDS.map((b, i) => {
-          const p = PLINTH[b.id];
           return (
             <Reveal key={b.id} delay={i * 0.12}>
-              <article className="group relative flex flex-col items-center text-center">
-                <BrandMark brand={b} className="h-12 w-20 text-ink transition-transform duration-700 ease-[var(--ease-ink)] group-hover:-translate-y-1.5" />
-                <h3 className="mt-4 font-display text-4xl font-extrabold tracking-[0.06em]">{b.name}</h3>
-                <div className="relative flex h-44 w-full items-end justify-center">
-                  <div className="float w-full" style={{ ["--float-dur" as string]: `${8 + i}s` }}>
-                    <Image src={p.src} alt="" width={p.w} height={p.h} sizes="(min-width: 640px) 30vw, 90vw" className="mx-auto h-auto max-h-44 w-auto edge-fade" />
-                  </div>
-                </div>
+              <article
+                className="float group relative flex flex-col items-center bg-[#FBF8F1] px-8 pb-9 pt-12 text-center shadow-[0_40px_60px_-45px_rgba(23,23,23,.5)] transition-transform duration-500 hover:-translate-y-1.5"
+                style={{ ["--float-dur" as string]: `${8 + i}s` }}
+              >
+                <BrandMark brand={b} className="h-20 w-28 text-ink" />
+                <h3 className="mt-8 font-display text-4xl font-extrabold tracking-[0.06em]">{b.name}</h3>
                 <span className="mt-6 border border-vermilion/50 px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-vermilion-deep">Demo asset</span>
                 <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-muted">{b.category}</p>
                 <div className="mt-5 flex w-full max-w-[16rem] justify-between border-t border-ink/15 pt-4 font-mono text-xs">
@@ -367,12 +358,6 @@ export function FinalCta() {
         sizes="100vw"
         className="absolute inset-x-0 bottom-0 -z-20 h-72 w-full object-cover opacity-45 mix-blend-multiply [mask-image:linear-gradient(to_bottom,transparent,black_55%)]"
       />
-      <Reveal className="absolute bottom-10 left-[3%] -z-10 hidden w-[250px] xl:block" y={40}>
-        <Image src="/art/torii.webp" alt="" width={450} height={380} sizes="250px" className="float h-auto w-full" />
-      </Reveal>
-      <Reveal className="absolute bottom-16 right-[4%] -z-10 hidden w-[210px] xl:block" y={40} delay={0.2}>
-        <Image src="/art/plinth-disc.webp" alt="" width={450} height={455} sizes="210px" className="float h-auto w-full" style={{ ["--float-dur" as string]: "10s" }} />
-      </Reveal>
       <div className="mx-auto max-w-[900px] px-5 pb-64 pt-36 text-center sm:px-8">
         <h2 className="font-display text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[0.98]">
           <RevealLines lines={["Your next receipt", "could be your next", <span key="own">ownership<span className="text-vermilion">.</span></span>]} />

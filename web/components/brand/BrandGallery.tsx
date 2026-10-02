@@ -1,17 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { useBrands } from "@/components/hooks/useStockback";
 import { BRANDS } from "@/lib/brands";
 import { addressUrl } from "@/lib/chain";
 import { units, type BrandState } from "@/lib/stockback";
-
-const ART: Record<string, { src: string; w: number; h: number }> = {
-  NIKE: { src: "/art/plinth-podium.webp", w: 400, h: 146 },
-  AAPL: { src: "/art/plinth-halo.webp", w: 510, h: 245 },
-  SBUX: { src: "/art/plinth-sakura.webp", w: 600, h: 290 },
-};
 
 /** Curated gallery of supported brands. Status, reward rate, caps and budget are read from chain. */
 export function BrandGallery({ compact }: { compact?: boolean }) {
@@ -22,16 +15,14 @@ export function BrandGallery({ compact }: { compact?: boolean }) {
       <ul className={`grid gap-px bg-ink/10 ${compact ? "md:grid-cols-3" : "lg:grid-cols-3"}`}>
         {rows.map((b) => {
           const live = "active" in b ? b : undefined;
-          const a = ART[b.id];
           const status = !live ? (isLoading ? "Reading chain…" : "Status unavailable") : live.active && live.budget > 0n ? "Available · demo" : "Paused";
           return (
             <li key={b.id} className="flex flex-col bg-paper p-7">
-              <div className="flex h-36 items-end justify-center">
-                <Image src={a.src} alt="" width={a.w} height={a.h} className="h-auto max-h-32 w-auto edge-fade" sizes="(min-width: 1024px) 25vw, 70vw" />
+              <div className="flex h-36 items-center justify-center border-b border-ink/10">
+                <BrandMark brand={b} className="h-20 w-28" />
               </div>
               <div className="mt-6 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <BrandMark brand={b} className="h-10 w-14" />
                   <div>
                   <h3 className="font-display text-3xl font-extrabold tracking-[0.04em]">{b.name}</h3>
                   <p className="mt-1 text-xs text-muted">{b.category}</p>
