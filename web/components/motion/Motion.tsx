@@ -83,9 +83,11 @@ export function CountUp({ value, format, className }: { value: number; format: (
     const c = animate(mv, value, { duration: 1.4, ease: EASE, onUpdate: (v) => setText(format(v)) });
     return () => c.stop();
   }, [inView, value, reduce, format, mv]);
+  // Screen readers always get the real value; the animated digits are decorative.
   return (
     <span ref={ref} className={className}>
-      {reduce ? format(value) : text}
+      <span className="sr-only">{format(value)}</span>
+      <span aria-hidden="true">{reduce ? format(value) : text}</span>
     </span>
   );
 }
