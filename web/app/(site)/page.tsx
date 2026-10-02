@@ -1,16 +1,18 @@
 import { Hero } from "@/components/landing/Hero";
-import { FinalCta, HowItWorks, Ownership, PortfolioPreview, Problem, Security, StylusSection, TechnicalProof } from "@/components/landing/Sections";
+import { Journey } from "@/components/landing/Journey";
+import { KineticType } from "@/components/landing/KineticType";
+import { LiveProof } from "@/components/landing/LiveProof";
+import { FinalCta, Ownership, Security, StylusSection } from "@/components/landing/Sections";
 
 export default function Landing() {
   return (
     <>
       <Hero />
-      <Problem />
-      <HowItWorks />
-      <TechnicalProof />
+      <LiveProof />
+      <Journey />
+      <KineticType />
       <StylusSection />
       <Ownership />
-      <PortfolioPreview />
       <Security />
       <FinalCta />
     </>
