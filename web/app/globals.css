@@ -172,6 +172,16 @@ body {
   animation: scan 2.6s var(--ease-ink) infinite;
 }
 
+/* Infinite horizontal ticker (content is duplicated, so -50% loops seamlessly). */
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee {
+  animation: marquee 60s linear infinite;
+}
+
 /* Pending pulse for pipeline steps */
 @keyframes breathe {
   0%,

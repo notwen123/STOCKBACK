@@ -151,6 +151,7 @@ export const getVaultBalance = async (vault: Address, user: Address) =>
 
 export type ActivityItem = {
   claimId: Hex;
+  claimant: Address;
   txHash: Hex;
   brand?: Brand;
   purchaseAmountPaise: bigint;
@@ -160,21 +161,22 @@ export type ActivityItem = {
   timestamp: number;
 };
 
-/** Claims settled by `user`, from registry events (no indexer: logs since the deployment block). */
-export async function getActivity(user: Address): Promise<ActivityItem[]> {
+/** Claims settled by `user` (or by everyone when omitted), from registry events since the deployment block. */
+export async function getActivity(user?: Address): Promise<ActivityItem[]> {
+  const args = user ? { claimant: user } : undefined;
   const [committed, allocated] = await Promise.all([
     publicClient.getContractEvents({
       address: contracts.registry,
       abi: receiptCommitmentRegistryAbi,
       eventName: "PurchaseCommitted",
-      args: { claimant: user },
+      args,
       fromBlock: FROM_BLOCK,
     }),
     publicClient.getContractEvents({
       address: contracts.registry,
       abi: receiptCommitmentRegistryAbi,
       eventName: "RewardAllocated",
-      args: { claimant: user },
+      args,
       fromBlock: FROM_BLOCK,
     }),
   ]);
@@ -190,6 +192,7 @@ export async function getActivity(user: Address): Promise<ActivityItem[]> {
       const a = byClaim.get(l.args.claimId);
       return {
         claimId: l.args.claimId!,
+        claimant: l.args.claimant!,
         txHash: l.transactionHash,
         brand: brandById(hexToAscii(l.args.brandId!)),
         purchaseAmountPaise: l.args.amount!,
