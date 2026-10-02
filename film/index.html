@@ -32,7 +32,8 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 #bar i{width:13px;height:13px;border-radius:50%;background:#d9cfbf}
 #url{margin-left:22px;flex:0 0 640px;height:28px;border-radius:8px;background:#f8f4ea;display:flex;align-items:center;gap:10px;padding:0 14px;font:500 14px var(--s);color:var(--char)}
 #view{position:relative;width:1600px;height:1000px;overflow:hidden;background:var(--washi)}
-#view img{position:absolute;left:0;width:1600px;height:1000px}
+#view img{display:none}
+#recCv{position:absolute;left:0;top:0;z-index:5;pointer-events:none}
 .chap{position:absolute;left:64px;bottom:58px;z-index:60;display:flex;align-items:center;gap:20px;background:rgba(244,239,227,.94);padding:18px 30px 18px 22px;
   box-shadow:0 30px 60px -30px rgba(23,23,23,.6);border-left:5px solid var(--shu)}
 .chap .n{font:500 22px var(--m);color:var(--shu)}
@@ -123,11 +124,12 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
           <div id="url"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a3632" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span id="urlTxt"></span></div></div>
         <div id="view"><img id="recA"><img id="recB"></div>
       </div>
-      <svg class="abs" id="cursor" style="left:0;top:0;overflow:visible;z-index:20" width="10" height="10">
-        <circle id="ripple" cx="0" cy="0" r="0" fill="none" stroke="#c83a2f" stroke-width="3"/>
-        <g id="arrow"><path d="M0 0 L0 23 L6 17.5 L10 26.5 L13.6 25 L9.8 16.2 L17.5 16.2 Z" fill="#171717" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></g>
-      </svg>
     </div>
+    <canvas id="recCv" width="1920" height="1080"></canvas>
+    <svg class="abs" id="cursor" style="left:0;top:0;overflow:visible;z-index:20" width="10" height="10">
+      <circle id="ripple" cx="0" cy="0" r="0" fill="none" stroke="#c83a2f" stroke-width="3"/>
+      <g id="arrow"><path d="M0 0 L0 23 L6 17.5 L10 26.5 L13.6 25 L9.8 16.2 L17.5 16.2 Z" fill="#171717" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></g>
+    </svg>
     <div id="live"><b></b><span>LIVE</span><span style="opacity:.6">stockbacks.vercel.app · Robinhood Chain testnet</span></div>
     <div class="chap" id="chap"><span class="n" id="chapN"></span><span class="t" id="chapT"></span></div>
   </div>

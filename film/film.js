@@ -78,7 +78,7 @@ function hook(t) {
   const rIn = A(t, 1.35, 2.2, E.out5);
   const [sx, sy] = shake(t, 4.45, 10, 0.35);
   css($("hr"), { opacity: rIn, transform: `translate(${sx}px,${(1 - rIn) * 90 + sy}px) rotate(${(1 - rIn) * -4}deg)` });
-  hookLines.forEach((el, i) => { const u = A(t, 1.6 + i * 0.13, 1.95 + i * 0.13); css(el, { opacity: u, clipPath: `inset(0 ${(1 - u) * 100}% 0 0)` }); });
+  hookLines.forEach((el, i) => { const u = A(t, 1.6 + i * 0.13, 1.95 + i * 0.13); css(el, { opacity: u, clipPath: u >= 1 ? "none" : `inset(-60px ${(1 - u) * 100}% -60px -60px)` }); });
   // the glitch: 2,000 -> 20,000
   const g = t >= 4.4 && t < 4.95;
   const tot = $("hTotal");
@@ -288,13 +288,28 @@ function raw(ft) {
 const PEND = (() => { let f = PR.start; for (const [r0, r1, sp] of PR.remap) f += (r1 - r0) / sp; return f; })();
 const K = 1600 / 1440, WX = 160, WY = 70; // viewport css px -> stage px
 const toStage = (x, y) => [WX + x * K, WY + y * K];
+// Camera shots are visible rectangles in stage space, clamped once per keyframe (never per frame),
+// then interpolated linearly in (cx, cy, w) with a smootherstep curve. Linear interpolation keeps
+// every intermediate rectangle inside the content, so the frame never jitters against an edge.
+const CW = 1600, CH = 1000;
+function shotRect(z, x, y) {
+  if (z <= 1.001) return { cx: 960, cy: 540, w: 1920 };
+  const w = 1920 / z, h = w * 9 / 16;
+  let [cx, cy] = toStage(x, y);
+  cx = w >= CW ? WX + CW / 2 : clamp(cx, WX + w / 2, WX + CW - w / 2);
+  cy = h >= CH ? WY + CH / 2 : clamp(cy, WY + h / 2, WY + CH - h / 2);
+  return { cx, cy, w };
+}
+const smoother = (u) => u * u * u * (u * (u * 6 - 15) + 10);
+const SHOTS = PR.camera.map(([a, b, z, x, y]) => ({ a, b, r: shotRect(z, x, y) }));
 function camera(rt) {
-  const ks = PR.camera;
-  let st = { z: ks[0][2], x: ks[0][3], y: ks[0][4] };
-  for (const [a, b, z, x, y] of ks) {
-    if (rt < a) break;
-    const u = b > a ? E.inOut(P(rt, a, b)) : 1;
-    st = { z: lerp(st.z, z, u), x: lerp(st.x, x, u), y: lerp(st.y, y, u) };
+  let st = SHOTS[0].r;
+  for (const s of SHOTS) {
+    if (rt < s.a) break;
+    // stretch quick moves so every glide lasts at least 1.3 s
+    const b = s.b > s.a ? Math.max(s.b, s.a + 1.3) : s.a;
+    const u = b > s.a ? smoother(P(rt, s.a, b)) : 1;
+    st = { cx: lerp(st.cx, s.r.cx, u), cy: lerp(st.cy, s.r.cy, u), w: lerp(st.w, s.r.w, u) };
   }
   return st;
 }
@@ -325,36 +340,41 @@ async function product(t) {
   let jump = PR.scrollJumps.find(([tj, , , d]) => rt >= tj && rt < tj + d);
   const f = TAKE.frames[fi];
   if (jump) {
-    const [tj, s0, s1, d] = jump, v = s0 + (s1 - s0) * E.inOut(P(rt, tj, tj + d));
-    const pre = TAKE.frames[frameAt(tj - 0.02)];
+    const pre = TAKE.frames[frameAt(jump[0] - 0.02)];
     await Promise.all([setImg(imgA, "A", `rec/${pre.file}`), setImg(imgB, "B", `rec/${f.file}`)]);
-    css(imgA, { top: `${(s0 - v) * K}px`, display: "block" });
-    css(imgB, { top: `${(s1 - v) * K}px`, display: "block" });
+
   } else {
     await setImg(imgB, "B", `rec/${f.file}`);
-    css(imgA, { display: "none" }); css(imgB, { top: "0px", display: "block" });
   }
   $("urlTxt").textContent = PR.urls.filter(([a]) => rt >= a).at(-1)[1];
-  // camera (+ a slow drift so nothing is ever perfectly still)
+  // camera matrix: stage -> screen
   const c = camera(rt);
-  let z = c.z;
-  let [fx, fy] = toStage(c.x, c.y);
-  if (z <= 1.001) { fx = 960; fy = 548; }
-  // clamp so the zoomed content always fills the frame
-  const minX = WX + 1600 - 960 / z, maxX = WX + 960 / z, minY = WY + 1000 - 540 / z, maxY = WY + 540 / z;
-  if (z > 1.05) { fx = clamp(fx, Math.min(maxX, minX), Math.max(maxX, minX)); fy = clamp(fy, Math.min(maxY, minY), Math.max(maxY, minY)); }
   const intro = lerp(0.82, 1, wIn), outro = lerp(1, 0.7, wOut);
-  const zz = z * intro * outro;
-  const tx = 960 - fx * zz + (1 - wIn) * 0, ty = 540 - fy * zz + (1 - wIn) * 160 - wOut * 60;
+  const zz = (1920 / c.w) * intro * outro;
+  const tx = 960 - c.cx * zz, ty = 540 - c.cy * zz + (1 - wIn) * 160 - wOut * 60;
   css($("cam"), { transform: `translate(${tx}px,${ty}px) scale(${zz})`, opacity: wIn * (1 - wOut) });
-  // cursor
+  // recording drawn on canvas with high-quality resampling at the exact sub-pixel transform
+  const cv = $("recCv"), g = cv.getContext("2d");
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, 1920, 1080);
+  g.globalAlpha = wIn * (1 - wOut);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  g.setTransform(zz, 0, 0, zz, tx, ty);
+  g.save(); g.beginPath(); g.roundRect(WX, WY, CW, CH, [0, 0, 16, 16]); g.clip();
+  g.fillStyle = "#f4efe3"; g.fillRect(WX, WY, CW, CH);
+  if (jump) {
+    const [tj, s0, s1, d] = jump, v = s0 + (s1 - s0) * E.inOut(P(rt, tj, tj + d));
+    g.drawImage(imgA, WX, WY + (s0 - v) * K, CW, CH);
+    g.drawImage(imgB, WX, WY + (s1 - v) * K, CW, CH);
+  } else g.drawImage(imgB, WX, WY, CW, CH);
+  g.restore();
+  // cursor, in screen space through the same matrix
   const cur = cursorAt(rt);
-  const [cx, cy] = toStage(cur.pos[0], cur.pos[1]);
+  const [sxp, syp] = toStage(cur.pos[0], cur.pos[1]);
   const press = cur.click < 0.22 ? 1 - Math.sin((cur.click / 0.22) * Math.PI) * 0.18 : 1;
-  css($("cursor"), { transform: `translate(${cx}px,${cy}px)`, opacity: A(t, 57.2, 57.6) });
-  $("arrow").setAttribute("transform", `scale(${1.25 * press})`);
+  css($("cursor"), { transform: `translate(${sxp * zz + tx}px,${syp * zz + ty}px)`, opacity: A(t, 57.2, 57.6) * wIn * (1 - wOut) });
+  $("arrow").setAttribute("transform", `scale(${1.25 * press * Math.sqrt(zz)})`);
   const rp = cur.click < 0.5 ? cur.click / 0.5 : 1;
-  $("ripple").setAttribute("r", 8 + E.out3(rp) * 42);
+  $("ripple").setAttribute("r", (8 + E.out3(rp) * 42) * Math.sqrt(zz));
   $("ripple").setAttribute("opacity", cur.click < 0.5 ? 1 - rp : 0);
   // overlays
   css($("live"), { opacity: env(t, 57.4, PEND + 0.4, 0.5, 0.5), transform: `translateY(${(1 - A(t, 57.4, 57.9)) * 20}px)` });
