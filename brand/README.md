@@ -28,7 +28,8 @@ Chromium comes from the Playwright cache; set `CHROME_PATH` to use another binar
 | `explainers/` | How it works · Who holds which key · Evidence tiers · Stylus benchmark · Inside one transaction | 3840×2160 | Docs, README, judges' Q&A |
 | `pitch/` | Cover, two problem frames, solution, built and tested, honest roadmap, close | 3840×2160 | Slides |
 | `guidelines/` | The seal · Colour and type | 3840×2160 | Anyone making new assets |
-| `STOCKBACK-pitch.pdf` | 11 pages: the pitch frames and explainers in story order | 2.7 MB | Email, submission upload |
+| `STOCKBACK-deck.pdf` + `deck/` | **The main deck.** 11 slides: intro, problem (forgery), problem (points), painkiller, uniqueness, market, architecture, live workflow, proof, impact, roadmap + close | 2.6 MB | Presenting to judges |
+| `STOCKBACK-pitch.pdf` | 11 pages: the pitch frames and explainers in story order | 2.6 MB | Longer read-through, email |
 | `contact-sheet.png` | Every image on one page | | Quick review |
 
 **Placement notes:**
@@ -70,6 +71,10 @@ Chromium comes from the Playwright cache; set `CHROME_PATH` to use another binar
 | 9.2x / 5.3x less gas; 100 signatures in 6,583,441 gas; Solidity over the 32M cap | `benchmarks/results/BENCHMARKS.md`, `onchain-46630.md` (measured on Robinhood Chain testnet) |
 | 50.1% human accuracy on AI-edited receipts; detector AUC 0.53–0.60; "under a second, a few cents" | Wu et al., arXiv:2604.25213 (2026) |
 | 14.8 programs vs 6.7 used; 73% find them too complicated; ~60% of coalitions fail in 10 years | Bond Loyalty Report 2020 via Oamen et al., arXiv:2512.00738 |
+| 24.07B UPI payments in September 2026 | NPCI UPI product statistics (npci.org.in) |
+| Loyalty management market $13.6B (2025), $15.3B (2026), $31.1B projected 2033, 10.7% CAGR | Grand View Research, Loyalty Management Market Report 2026–2033 |
+| +244% digital document forgeries YoY | Entrust 2025 Identity Fraud Report, cited in arXiv:2604.25213 |
+| Workflow screenshots | Captured from the live app at stockbacks.vercel.app on 2026-10-02 |
 | 100,000 demo units per brand per day bound | `RewardPolicy.config` read on-chain, see `SECURITY.md` |
 | 83 Solidity, 5 Rust, 20 + 22 web tests | `forge test`, `cargo test`, `web/npm test`, `web/npm run test:e2e` |
 | Registry, Stylus verifier, merchant-signed claim tx | `deployments/46630.json`, `README.md` |

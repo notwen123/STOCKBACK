@@ -607,3 +607,251 @@ add(
     { css: exCss },
   ),
 );
+
+// ============================================================== DECK (11 slides, 16:9, visual-first)
+const dkCss = exCss + `
+  .t { font-family:var(--display); font-weight:800; font-size:86px; line-height:.98; letter-spacing:-.015em }
+  .sub { font-size:28px; color:var(--charcoal); line-height:1.35 }
+  .big { font-family:var(--display); font-weight:800; line-height:.92; letter-spacing:-.02em }
+  .cap { font-size:22px; color:var(--charcoal); line-height:1.35 }
+  .src { font-size:15px; color:var(--stone) }
+  .frame { background:#fbf8f1; box-shadow:0 40px 70px -40px rgba(23,23,23,.55); border:1px solid rgba(23,23,23,.1) }
+  .frame .bar { height:30px; display:flex; gap:7px; align-items:center; padding:0 12px; border-bottom:1px solid rgba(23,23,23,.1) }
+  .frame .bar i { width:10px; height:10px; border-radius:50%; background:rgba(23,23,23,.18) }
+  .box { position:absolute; background:#fbf8f1; border:1.5px solid rgba(23,23,23,.2); padding:18px 20px }
+  .box b { display:block; font-family:var(--display); font-size:25px; line-height:1.1 }
+  .box span { display:block; margin-top:6px; font-size:16px; color:var(--charcoal); line-height:1.35 }
+`;
+const slide = (n, label, body, { title, sub, dark = false } = {}) =>
+  page(
+    `${dark ? `<div class="fill" style="background:var(--sumi)"></div>` : ""}
+    <div class="abs" style="left:96px;top:64px;right:96px;display:flex;justify-content:space-between;align-items:center;font-size:18px;color:${dark ? "rgba(244,239,227,.7)" : "var(--stone)"}">
+      <span><span class="mono" style="color:var(--shu)">${String(n).padStart(2, "0")}</span>&nbsp;&nbsp;${label}</span>${wordmark(18, dark ? { color: "var(--washi)", paper: "var(--sumi)" } : {})}</div>
+    ${title ? `<h1 class="abs t" style="left:92px;top:130px;right:96px;${dark ? "color:var(--washi)" : ""}">${title}</h1>` : ""}
+    ${sub ? `<p class="abs sub" style="left:96px;top:${title.includes("<br>") ? 330 : 240}px;max-width:1100px">${sub}</p>` : ""}
+    ${body}`,
+    { css: dkCss },
+  );
+const D = (n, name, html) => add(`deck/${String(n).padStart(2, "0")}-${name}`, ...W, html);
+
+// 01 Intro
+D(1, "intro", page(
+  `<img src="art/landscape.png" class="abs" style="right:-60px;top:0;height:100%">
+  <div class="fill" style="background:linear-gradient(90deg,var(--washi) 32%,rgba(244,239,227,.75) 50%,rgba(244,239,227,0) 72%)"></div>
+  <div class="abs" style="left:110px;top:96px">${wordmark(30)}</div>
+  <h1 class="abs big" style="left:102px;top:280px;font-size:184px">Every receipt,<br>sealed.</h1>
+  <div class="abs" style="left:800px;top:500px">${seal(170, { rotate: -9 })}</div>
+  <p class="abs sub" style="left:110px;top:720px;font-size:36px">Proof of purchase becomes proof of ownership.</p>
+  <p class="abs" style="left:110px;bottom:80px;font-size:20px;color:var(--charcoal)">Arbitrum Open House Singapore Buildathon 2026 &nbsp;&nbsp;<b style="color:var(--sumi)">stockbacks.vercel.app</b></p>`,
+  { css: dkCss },
+));
+
+// 02 Problem: forgery
+D(2, "problem-forgery", slide(2, "The problem", `
+  <div class="abs receipt" style="left:130px;top:370px;width:580px;padding:40px 44px 46px;font-size:23px;transform:rotate(-3deg)">
+    <p style="text-align:center;font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:.2em">RECEIPT</p>
+    <div class="dash" style="margin:18px 0"></div>
+    ${receiptLines([["Store", "042 Mumbai"], ["Receipt", "INV-58213"], ["Date", "02 OCT 2026"], "---"])}
+    <div class="row" style="font-size:32px;align-items:center"><span>TOTAL</span><span style="position:relative">₹<s style="text-decoration-color:var(--shu);text-decoration-thickness:4px">2,000</s> <b style="color:var(--shu-deep)">20,000</b>
+      <svg class="abs" style="left:-24px;top:-30px;width:250px;height:100px;overflow:visible" viewBox="0 0 250 100"><ellipse cx="135" cy="50" rx="128" ry="40" fill="none" stroke="#c83a2f" stroke-width="4" stroke-dasharray="2 0" transform="rotate(-4 125 50)"/></svg></span></div>
+    <p style="margin-top:30px;font-family:var(--sans);font-size:22px;color:var(--shu-deep)">Edited by an image model in under a second.</p>
+  </div>
+  <div class="abs" style="left:880px;top:340px;right:96px;display:grid;gap:70px">
+    <div><p class="big" style="font-size:220px;color:var(--shu)">50.1%</p><p class="cap" style="font-size:28px">of people can spot the fake. A coin flip.</p></div>
+    <div style="display:grid;grid-template-columns:.8fr 1.2fr;gap:40px">
+      <div><p class="big" style="font-size:96px">+244%</p><p class="cap">digital document forgeries, year on year</p></div>
+      <div><p class="big" style="font-size:96px;white-space:nowrap;letter-spacing:-.03em">0.53–0.60</p><p class="cap">best forensic detectors (AUC). Barely above chance.</p></div>
+    </div>
+  </div>
+  <p class="abs src" style="left:96px;bottom:54px">Wu et al., arXiv:2604.25213 (2026), incl. Entrust 2025 Identity Fraud Report.</p>`,
+  { title: "A receipt photo proves nothing." }));
+
+// 03 Problem: points
+const cards = Array.from({ length: 15 }, (_, i) =>
+  `<div style="height:124px;border-radius:12px;${i < 7 ? "background:var(--sumi)" : "border:2px dashed rgba(23,23,23,.28)"};position:relative">${i < 7 ? `<span class="abs" style="left:14px;bottom:12px;width:38px;height:6px;border-radius:3px;background:var(--shu)"></span>` : ""}</div>`,
+).join("");
+D(3, "problem-points", slide(3, "The problem", `
+  <div class="abs" style="left:96px;top:330px;width:860px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px">${cards}</div>
+  <p class="abs cap" style="left:96px;top:790px;width:860px;font-size:28px"><b style="color:var(--sumi)">14.8</b> loyalty programs joined. <b style="color:var(--sumi)">6.7</b> actually used. The rest sit forgotten.</p>
+  <div class="abs" style="left:1090px;top:320px;right:96px;display:grid;gap:80px">
+    <div><p class="big" style="font-size:180px;color:var(--shu)">73%</p><p class="cap" style="font-size:26px">find loyalty programs too complicated</p></div>
+    <div><p class="big" style="font-size:180px">~60%</p><p class="cap" style="font-size:26px">of coalition programs fail within ten years</p></div>
+  </div>
+  <p class="abs src" style="left:96px;bottom:54px">Bond Brand Loyalty Report 2020, cited in Oamen et al., arXiv:2512.00738.</p>`,
+  { title: "Points never feel like yours." }));
+
+// 04 Painkiller
+const arrow = `<svg width="150" height="40" viewBox="0 0 150 40"><path d="M4 22c40-8 80-10 128-4" stroke="#c83a2f" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M118 6l22 14-24 12" stroke="#c83a2f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+D(4, "painkiller", slide(4, "The painkiller", `
+  <div class="abs" style="left:96px;right:96px;top:320px;display:grid;grid-template-columns:1fr 150px 1fr 150px 1fr;align-items:center">
+    <div style="display:grid;place-items:center">
+      <div class="receipt" style="width:380px;padding:32px 32px 40px;font-size:19px;position:relative">
+        <p style="text-align:center;font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:.2em">RECEIPT</p><div class="dash" style="margin:12px 0"></div>
+        ${receiptLines([["Receipt", "R-TM9X…FD23"], ["Total", "₹2,000"]])}<div class="dash" style="margin:12px 0"></div>
+        <p style="font-size:12px;opacity:.6">ed25519 7f3a9c…a1f09b</p>
+        <div class="abs" style="right:-36px;bottom:-30px">${kakuin(130)}</div>
+      </div>
+    </div>
+    <div style="display:grid;place-items:center">${arrow}</div>
+    <div style="display:grid;place-items:center;position:relative">
+      <div style="width:260px;height:260px;border-radius:50%;border:2px solid var(--sumi);display:grid;place-items:center;text-align:center">
+        <div><p class="mono" style="font-size:16px;color:var(--charcoal)">Stylus · Rust</p><p class="big" style="font-size:52px;margin-top:8px">verify()</p><p style="font-size:17px;margin-top:8px;color:var(--charcoal)">signature · once · caps</p></div>
+      </div>
+    </div>
+    <div style="display:grid;place-items:center">${arrow}</div>
+    <div style="display:grid;place-items:center;text-align:center">${seal(250, { rotate: -8 })}<p class="mono" style="margin-top:18px;font-size:20px">+15 sbNKE · vault shares</p></div>
+  </div>
+  <div class="abs" style="left:96px;right:96px;top:760px;display:grid;grid-template-columns:1fr 150px 1fr 150px 1fr;text-align:center">
+    ${[["読", "Scan", "The merchant signs the receipt"], ["証", "Prove", "Checked once, on Arbitrum"], ["有", "Own", "Brand shares in your wallet"]]
+      .map(([k, t, b], i) => `${i ? "<div></div>" : ""}<div><p class="mincho" style="font-size:64px;font-weight:800;color:var(--shu);line-height:1">${k}</p><p class="mincho" style="font-size:36px;font-weight:700;margin-top:10px">${t}</p><p class="cap" style="margin-top:6px">${b}</p></div>`)
+      .join("")}
+  </div>`,
+  { title: "Seal the receipt. Own the brand." }));
+
+// 05 Uniqueness
+const miniBars = `<div style="display:grid;gap:10px;width:190px"><span style="height:26px;width:190px;background:var(--ai);border-radius:0 4px 4px 0"></span><span style="height:26px;width:21px;background:var(--shu);border-radius:0 4px 4px 0"></span></div>`;
+const vault = `<svg width="150" height="150" viewBox="0 0 100 100"><rect x="8" y="8" width="84" height="84" rx="6" fill="#171717"/><circle cx="50" cy="50" r="26" fill="none" stroke="#f4efe3" stroke-width="4"/><path d="M50 30v40M30 50h40" stroke="#f4efe3" stroke-width="3"/><circle cx="50" cy="50" r="9" fill="#c83a2f"/></svg>`;
+const formula = `<div style="background:var(--sumi);color:var(--washi);font-family:var(--mono);font-size:19px;line-height:1.5;padding:18px 22px;width:220px">keccak256(<br>&nbsp;tag,<br>&nbsp;merchant,<br>&nbsp;receipt)</div>`;
+D(5, "uniqueness", slide(5, "Why it's different", `
+  <div class="abs" style="left:96px;right:96px;top:290px;display:grid;grid-template-columns:1fr 1fr;gap:28px">
+    ${[
+      [kakuin(150), "Signature, not pixels", "Change one digit and the claim fails."],
+      [formula, "Counted once, for anyone", "The receipt's nullifier burns on-chain."],
+      [vault, "Yours. No admin.", "Admin-less ERC-4626 vault shares."],
+      [miniBars, "9.2x cheaper to verify", "Ed25519 in Rust on Arbitrum Stylus."],
+    ]
+      .map(([v, t, b]) => `<div class="card" style="display:grid;grid-template-columns:240px 1fr;align-items:center;gap:30px;min-height:300px;padding:36px 40px"><div style="display:grid;place-items:center">${v}</div><div><h3 style="font-size:44px">${t}</h3><p style="font-size:24px">${b}</p></div></div>`)
+      .join("")}
+  </div>`,
+  { title: "Four guarantees. One transaction." }));
+
+// 06 Market
+const mk = [
+  ["2025", 13.6, false],
+  ["2026", 15.3, false],
+  ["2033", 31.1, true],
+];
+const mkBars = `<div style="display:flex;align-items:flex-end;gap:30px;height:400px">${mk
+  .map(
+    ([y, v, proj]) => `<div style="display:grid;justify-items:center;gap:10px"><span class="mono" style="font-size:20px">$${v}B</span>
+    <span style="width:110px;height:${(v / 31.1) * 330}px;border-radius:4px 4px 0 0;${proj ? "background:repeating-linear-gradient(45deg,rgba(200,58,47,.45) 0 8px,transparent 8px 16px);outline:2px dashed var(--shu);outline-offset:-2px" : "background:var(--shu)"}"></span>
+    <span style="font-size:19px;color:var(--charcoal)">${y}${proj ? " (proj.)" : ""}</span></div>`,
+  )
+  .join("")}</div>`;
+D(6, "market", slide(6, "Market", `
+  <div class="abs" style="left:96px;right:96px;top:350px;display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:64px;align-items:end">
+    <div><p class="big" style="font-size:190px;color:var(--shu)">24.07B</p><p class="cap" style="font-size:27px;margin-top:14px">UPI payments in India in September 2026 alone. Each one is a purchase that could be sealed.</p><p class="src" style="margin-top:12px">NPCI UPI product statistics</p></div>
+    <div>${mkBars}<p class="cap" style="font-size:24px;margin-top:20px">Loyalty software market, growing 10.7% a year</p><p class="src" style="margin-top:12px">Grand View Research, 2026</p></div>
+    <div><p class="big" style="font-size:160px">+244%</p><p class="cap" style="font-size:24px;margin-top:14px">digital document forgeries, year on year. Verified receipts become a need.</p><p class="src" style="margin-top:12px">Entrust 2025, via arXiv:2604.25213</p></div>
+  </div>
+  <p class="abs src" style="left:96px;bottom:54px">Third-party figures, shown as context. STOCKBACK has no users or revenue yet.</p>`,
+  { title: "The rails already exist." }));
+
+// 07 Architecture
+const box = (x, y, w, h, t, s, style = "") => `<div class="box" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${style}"><b>${t}</b><span>${s}</span></div>`;
+const line = (x1, y1, x2, y2, label = "", c = "#171717") =>
+  `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="2" marker-end="url(#ah${c === "#171717" ? "" : "r"})"/>${label ? `<text x="${x1 === x2 ? x1 + 14 : (x1 + x2) / 2}" y="${x1 === x2 ? (y1 + y2) / 2 + 5 : (y1 + y2) / 2 - 12}" text-anchor="${x1 === x2 ? "start" : "middle"}" font-family="IBM Plex Mono" font-size="15" fill="#3a3632">${label}</text>` : ""}`;
+D(7, "architecture", slide(7, "Architecture", `
+  <div class="abs" style="left:96px;top:250px;width:1728px;height:740px">
+    <div class="abs" style="left:0;top:0;width:470px;height:720px;background:var(--washi-deep)"></div>
+    <p class="abs" style="left:24px;top:14px;font-size:18px;color:var(--charcoal)">Off-chain, seconds</p>
+    <div class="abs" style="left:530px;top:0;width:1198px;height:720px;border:2px solid rgba(200,58,47,.5)"></div>
+    <p class="abs" style="left:554px;top:14px;font-size:18px;color:var(--shu-deep)">Robinhood Chain testnet (Arbitrum), one transaction</p>
+    <svg class="abs" style="left:0;top:0;overflow:visible" width="1728" height="720">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#171717"/></marker>
+      <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c83a2f"/></marker></defs>
+      ${line(235, 190, 235, 278, "QR")}
+      ${line(235, 520, 235, 432, "attestation")}
+      ${line(470, 355, 896, 355, "submitClaim(claim, attestation)", "#c83a2f")}
+      ${line(1096, 280, 1096, 192)}
+      ${line(1010, 280, 830, 192)}
+      ${line(1182, 280, 1362, 192)}
+      ${line(1096, 430, 1096, 548)}
+      ${line(1296, 613, 1366, 613)}
+      ${line(826, 613, 896, 613)}
+    </svg>
+    ${box(30, 60, 410, 130, "Merchant POS", "Signs every receipt field, Ed25519. Simulated in the demo.")}
+    ${box(30, 280, 410, 150, "Web app + wallet", "Scans the QR, previews every check, sends one transaction.")}
+    ${box(30, 520, 410, 160, "Attester API", "Verifies the merchant signature, expiry, brand and prior use. Signs an EIP-712 claim of hashes only.")}
+    ${box(586, 60, 240, 130, "EligibilityPolicy", "Brand, INR, amount, 30-day window")}
+    ${box(896, 60, 400, 130, "Stylus ReceiptProver", "Rust. Strict Ed25519, attester allowlist.", "border-color:var(--shu)")}
+    ${box(1366, 60, 300, 130, "RewardPolicy", "Rate, per-claim and daily caps")}
+    ${box(896, 280, 400, 150, "ReceiptCommitmentRegistry", "Claimant, deadline, commitment, nullifier. Orchestrates everything.", "border-width:2.5px;border-color:var(--sumi)")}
+    ${box(586, 548, 240, 130, "USDG adapter", "Sponsor funds in USDG")}
+    ${box(896, 548, 400, 130, "RewardPool", "Pays only the sponsor's budget")}
+    ${box(1366, 548, 300, 130, "BrandVault x3", "ERC-4626, no admin. Your shares.")}
+  </div>`,
+  { title: "Architecture" }));
+
+// 08 Workflow (real screenshots of the live app)
+const shot = (src, pos = "center top") =>
+  `<div class="frame" style="width:560px"><div class="bar" style="padding-left:58px"><i></i><i></i><i></i></div><img src="art/shots/${src}" style="display:block;width:560px;height:370px;object-fit:cover;object-position:${pos}"></div>`;
+D(8, "workflow", slide(8, "Workflow", `
+  <div class="abs" style="left:96px;right:96px;top:330px;display:grid;grid-template-columns:repeat(3,560px);justify-content:space-between">
+    ${[
+      ["pos.png", "right center", "The till prints a signed QR", "/merchant"],
+      ["preview.png", "center top", "Signature verified", "/app/scan"],
+      ["portfolio.png", "center top", "Vault shares in your wallet", "/app/portfolio"],
+    ]
+      .map(
+        ([f, p, t, r], i) => `<div style="position:relative">${shot(f, p)}
+        <div class="abs" style="left:-18px;top:-26px">${seal(64, { glyph: String(i + 1), rotate: -8 })}</div>
+        <p class="mincho" style="margin-top:30px;font-size:32px;font-weight:700">${t}</p><p class="mono" style="margin-top:6px;font-size:17px;color:var(--stone)">stockbacks.vercel.app${r}</p></div>`,
+      )
+      .join("")}
+  </div>
+  <p class="abs cap" style="left:96px;bottom:70px;font-size:22px">About 30 seconds end to end. Tampered or replayed QR codes are rejected before anything is signed.</p>`,
+  { title: "The workflow, live." }));
+
+// 09 Built & measured
+D(9, "proof", slide(9, "Proof", `
+  <div class="abs" style="left:96px;top:390px">${benchChart(1100, { row: 112, bar: 32, label: 200, font: 21 })}</div>
+  <div class="abs" style="left:1350px;right:96px;top:330px;display:grid;gap:56px">
+    <div><p class="big" style="font-size:96px;color:var(--shu)">9.2x</p><p class="cap">less gas than Solidity</p></div>
+    <div><p class="big" style="font-size:96px">130</p><p class="cap">automated tests: 83 Solidity, 5 Rust, 42 web</p></div>
+    <div><p class="big" style="font-size:96px">9</p><p class="cap">contracts: 8 Solidity, 1 Rust on Stylus</p></div>
+  </div>
+  <p class="abs src" style="left:96px;bottom:54px">Gas measured with eth_estimateGas on Robinhood Chain testnet. Merchant-signed claim: ${short(FACTS.sealedTx)}. Registry: ${short(FACTS.registry)}.</p>`,
+  { title: "Built, deployed, measured." }));
+
+// 10 Impact & benefits
+const ben = (items) => items.map((t) => `<div style="display:flex;align-items:center;gap:18px;font-size:25px;line-height:1.3">${tick(true, 34)}<span>${t}</span></div>`).join("");
+D(10, "impact", slide(10, "Impact", `
+  <div class="abs" style="left:96px;right:96px;top:300px;display:grid;grid-template-columns:1fr 1fr;gap:40px">
+    <div class="card" style="position:relative;min-height:600px;padding:44px 48px;overflow:hidden">
+      <img src="art/phone.webp" class="abs" style="right:-30px;bottom:-60px;height:520px;opacity:.95">
+      <h3 style="font-size:54px">Shoppers</h3>
+      <div style="display:grid;gap:22px;margin-top:34px;max-width:480px">${ben(["A share of the brand, not a point", "No expiry, no admin can dilute it", "No personal data on-chain", "One wallet for every brand"])}</div>
+    </div>
+    <div class="card" style="position:relative;min-height:600px;padding:44px 48px;overflow:hidden">
+      <div class="abs" style="right:40px;bottom:40px">${kakuin(220, { rotate: -8 })}</div>
+      <h3 style="font-size:54px">Brands</h3>
+      <div style="display:grid;gap:22px;margin-top:34px;max-width:560px">${ben(["Reward only signed, verified purchases", "Budgets and daily caps they set", "No coalition operator taking a cut", "Fund rewards in USDG"])}</div>
+    </div>
+  </div>`,
+  { title: "Everyone keeps what's theirs." }));
+
+// 11 Roadmap & close
+D(11, "roadmap-close", slide(11, "Next", `
+  <div class="abs" style="left:96px;right:96px;top:350px">
+    <div style="position:relative;height:30px"><div class="abs" style="left:15px;right:15px;top:14px;height:2px;background:rgba(23,23,23,.25)"></div>
+      <div class="abs" style="left:15px;width:33%;top:14px;height:2px;background:var(--shu)"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:-30px">
+      ${[
+        ["Now", "Live on testnet", "Merchant-signed receipts, Stylus verifier, admin-less vaults, USDG adapter", true],
+        ["Next", "Production-ready", "Hold period with refund voiding, real POS keys, k-of-n attesters", false],
+        ["Later", "At scale", "zkTLS payment proofs, mainnet with issuer-authorized assets", false],
+      ]
+        .map(
+          ([n, t, b, on]) => `<div><span style="display:block;width:30px;height:30px;border-radius:50%;${on ? "background:var(--shu)" : "background:var(--washi);border:2px solid var(--sumi)"}"></span>
+          <p class="mincho" style="margin-top:26px;font-size:56px;font-weight:800">${n}</p><p style="font-size:27px;font-weight:600;margin-top:6px">${t}</p><p class="cap" style="margin-top:10px;font-size:24px">${b}</p></div>`,
+        )
+        .join("")}
+    </div>
+  </div>
+  <div class="abs" style="left:96px;right:96px;bottom:90px;display:flex;align-items:center;gap:48px;border-top:1px solid rgba(23,23,23,.18);padding-top:44px">
+    ${qr(170, 14)}
+    <div><p class="big" style="font-size:84px">Scan. Prove. Own.</p><p style="margin-top:12px;font-size:24px"><b>stockbacks.vercel.app</b> &nbsp; github.com/notwen123/STOCKBACK</p></div>
+    <div style="margin-left:auto">${seal(150, { rotate: -8 })}</div>
+  </div>`,
+  { title: "Where it goes next." }));
