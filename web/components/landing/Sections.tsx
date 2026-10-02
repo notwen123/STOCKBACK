@@ -350,15 +350,15 @@ export function Security() {
 export function FinalCta() {
   return (
     <section aria-label="Get started" className="relative isolate overflow-hidden">
+      {/* Ink landscape panorama: open paper sky above for the statement, mountains and blossoms below. */}
       <Image
-        src="/art/ink-blossom.webp"
+        src="/art/cta-landscape.webp"
         alt=""
-        width={740}
-        height={323}
+        fill
         sizes="100vw"
-        className="absolute inset-x-0 bottom-0 -z-20 h-72 w-full object-cover opacity-45 mix-blend-multiply [mask-image:linear-gradient(to_bottom,transparent,black_55%)]"
+        className="-z-10 object-contain object-bottom [mask-image:linear-gradient(to_bottom,transparent,black_18%)] md:object-cover md:object-[50%_85%]"
       />
-      <div className="mx-auto max-w-[900px] px-5 pb-64 pt-36 text-center sm:px-8">
+      <div className="mx-auto flex max-w-[900px] flex-col items-center justify-start px-5 pb-56 pt-24 text-center sm:px-8 md:min-h-[78vh] md:pb-[34vh] md:pt-32">
         <h2 className="font-display text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[0.98]">
           <RevealLines lines={["Your next receipt", "could be your next", <span key="own">ownership<span className="text-vermilion">.</span></span>]} />
         </h2>
@@ -366,7 +366,7 @@ export function FinalCta() {
           <ButtonLink href="/app/dashboard">
             Start Stockback <Arrow />
           </ButtonLink>
-          <ButtonLink href="/about" variant="ghost" className="bg-paper/70">
+          <ButtonLink href="/about" variant="ghost" className="bg-paper/70 backdrop-blur-sm">
             Read the protocol
           </ButtonLink>
         </Reveal>
@@ -375,17 +375,11 @@ export function FinalCta() {
   );
 }
 
-/** Full-width ink-blossom band used between sections. */
+/** Ink-and-blossom stream (transparent artwork) used as a band between sections. */
 export function InkBand() {
   return (
-    <div aria-hidden="true" className="relative h-40 overflow-hidden sm:h-56">
-      <Image
-        src="/art/ink-blossom.webp"
-        alt=""
-        fill
-        sizes="100vw"
-        className="object-cover object-center opacity-55 mix-blend-multiply [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]"
-      />
+    <div aria-hidden="true" className="relative mx-auto w-full max-w-[1600px]">
+      <Image src="/art/blossom-stream.webp" alt="" width={1600} height={534} sizes="100vw" className="h-auto w-full" />
     </div>
   );
 }
