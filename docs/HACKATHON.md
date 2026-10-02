@@ -2,7 +2,7 @@
 
 **STOCKBACK: Proof-of-Purchase → Proof-of-Ownership.** *Scan. Prove. Own.*
 
-A protocol that turns an **attested real-world purchase** into **pooled ownership exposure** in a brand-specific ERC-4626 vault, with replay protection, bounded rewards and no PII on-chain.
+A protocol that turns an **attested purchase receipt** into **pooled ownership exposure** in a brand-specific ERC-4626 vault, with replay protection, bounded rewards and no PII on-chain.
 
 This document maps the build to the published judging criteria. It states what exists and what does not. It makes no claim about the outcome.
 
@@ -14,11 +14,21 @@ This document maps the build to the published judging criteria. It states what e
 - Reuses audited OpenZeppelin v5 primitives (EIP712, ECDSA, ERC4626, Ownable, ReentrancyGuard, SafeERC20, Math.mulDiv).
 - Found and fixed a real ABI mismatch inherited from the upstream code: the SwapRouter02 vs V3 struct, verified against deployed mainnet bytecode.
 
+## Evidence: what is and isn't proven
+
+| Tier | Evidence | Status |
+|---|---|---|
+| 1 | Merchant-signed demo receipt: Ed25519 over every field, verified before attestation. **Simulated merchant.** | Implemented, tested, claimed on testnet (`0xabd3b62b…5388`) |
+| 2 | Attested photo / OCR: the attester signs what it was given, so authenticity is **not** established | Implemented |
+| 3 | Verified payment / order evidence (zkTLS) | Roadmap, not implemented |
+
+Why tiers matter: recent work shows humans detect AI-forged receipt photos at chance (0.501), and forensic detectors reach AUC 0.53–0.60. Sources and analysis are in `docs/RESEARCH.md`. A photo is therefore not treated as proof of purchase anywhere in the product.
+
 ## Product-market fit
 
 - Loyalty points are closed-loop, expire and are illiquid. STOCKBACK rewards a purchase with exposure to the brand the customer actually buys from, held in a standard ERC-4626 vault the user controls.
 - Merchants fund a capped, per-brand budget, directly or in USDG. Rules are public and deterministic (`RewardPolicy`), and sponsors can withdraw unallocated budget.
-- **Not claimed**: users, merchants, partnerships or traction. None exist yet.
+- **Not claimed**: users, merchants, partnerships, traction, or any measured fraud reduction or retention effect. None exist yet. The `/merchant` POS is a simulation.
 
 ## Innovation and creativity
 
@@ -29,7 +39,9 @@ This document maps the build to the published judging criteria. It states what e
 
 ## Real problem solving
 
-- Anti-replay is enforced on-chain. Anti-Sybil is handled **honestly and partially**: caps, budgets and an optional KYC/jurisdiction adapter, with the limits written down (`SECURITY.md`, known risk 3).
+- Anti-replay is enforced on-chain. Anti-Sybil is handled **honestly and partially**: caps, budgets and an optional KYC/jurisdiction adapter, with the limits written down (`SECURITY.md`, "Replay protection vs. Sybil resistance").
+- Merchant-signed receipts move trust from pixels to a signature. Tests cover tampering of each field, the wrong key, expiry, unsupported brands, duplicates and fail-closed config (`npm test`, `npm run test:e2e`).
+- Rewards settle instantly. There is **no** hold period for refunds yet (follow-up, needs new contracts).
 - Privacy: raw receipts and UPI references never touch the chain. Receipt hashes are salted because short references are brute-forceable (`PRIVACY.md`).
 - Compliance is an adapter, not hardcoded geography (`COMPLIANCE.md`). The demo uses clearly fictional mock assets that refuse to deploy on production chains.
 
@@ -64,4 +76,7 @@ This document maps the build to the published judging criteria. It states what e
 | Stylus benchmark | measured on Robinhood testnet |
 | Robinhood testnet deployment | done (`deployments/46630.json`) |
 | Consumer web app | done (`web/`): RainbowKit, OCR, attester API, real testnet claims |
+| Merchant-signed receipts (tier 1) | done with a **simulated** merchant: `/merchant` POS, QR scan, signature verification, 20 unit + 22 integration checks, browser claim on testnet |
+| Pending rewards / refunds, Sybil resistance, key-rotation tooling | not built (documented in `SECURITY.md`) |
+| Payment/order-source proofs (zkTLS) | not built (roadmap) |
 | Demo video | not recorded |

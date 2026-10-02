@@ -6,12 +6,12 @@ October 2026. Every number below comes from the cited paper. Where we have no so
 
 The vitamin is "earn stock instead of points." That's nice, but nobody's day is broken without it.
 
-**The painkiller is proof of purchase that AI can't fake.** Receipt photos stopped being evidence in 2026.
+**The painkiller is proof of purchase anchored in a signature, not in pixels.** Receipt photos stopped being reliable evidence in 2026.
 Any reward, refund, warranty or expense flow that trusts pixels is now paying out on forgeries. STOCKBACK
 already has the right on-chain half:
 - an Ed25519 signature checked by Stylus at 1/9 the gas
 - one nullifier per purchase
-- an admin-less vault the issuer cannot devalue
+- an admin-less vault that no admin can dilute, freeze or expire (the underlying asset's value can still change)
 
 What's missing is moving the *trust origin* from pixels to the source: the merchant's or the payment rail's
 signature. We also need to stop paying out instantly.
@@ -75,8 +75,9 @@ Hop airdrop:
 
 **Implication.** We pay vault shares the instant a claim lands, so T = 0. Our per-*address* daily cap is
 bypassed with a new wallet. What saves us is that our nullifier is per *receipt*, not per person. If the
-receipt is genuine, a "sybil" with real receipts is just a real customer. **Make the evidence unforgeable and
-the sybil problem goes away.** Add a hold window anyway, because refunds exist.
+receipt is genuine, a "sybil" with real receipts is just a real customer. **Stronger evidence shrinks the sybil
+problem:** extra wallets don't help without receipts the merchant actually signed. That holds only while the
+merchant key is not compromised, and it is no proof of personhood. Add a hold window anyway, because refunds exist.
 
 ### 1.5 Why loyalty programs fail users and merchants
 
@@ -106,8 +107,9 @@ asset such as a stablecoin.
 - no operator takes a cut
 - USDG is the universal asset
 
-The admin-less ERC-4626 vault is the one thing a points program **cannot** promise: *the issuer can't devalue
-or expire your balance.* That is enforced by code, not by a policy page.
+The admin-less ERC-4626 vault is the one thing a points program **cannot** promise: *no admin can dilute, freeze
+or expire your shares.* That is enforced by code, not by a policy page. The market value of the underlying asset can
+still fall; that is a real risk, not a promise.
 
 ---
 
@@ -132,7 +134,7 @@ Things we got right that the papers back:
 
 ## 3. The painkiller version
 
-> **STOCKBACK: proof of purchase that AI can't fake, paid in brand ownership that can't be devalued.**
+> **STOCKBACK: proof of purchase from a signature rather than a photo, paid in brand-vault shares no admin can dilute or expire.**
 
 ### 3.1 Who hurts today, and how
 
@@ -148,8 +150,8 @@ Evidence tiers. The on-chain path stays identical; only the off-chain signer's *
 
 | Tier | Evidence | Who signs | Forgeable by GPT-Image-2? | Reward policy |
 |---|---|---|---|---|
-| **A** | Merchant-signed receipt QR (POS signs at sale time with an Ed25519 key) | Merchant | **No**: the forger lacks the key | Full rate, short hold |
-| **B** | zkTLS proof of an order email or bank/UPI record (DECO / TLSNotary) | Payment or commerce site, via the TLS session | **No**: provenance is cryptographic | Full rate, hold equal to the return window |
+| **A** | Merchant-signed receipt QR (POS signs at sale time with an Ed25519 key) | Merchant | Not without the merchant key (a key leak breaks this) | Full rate, short hold |
+| **B** | zkTLS proof of an order email or bank/UPI record (DECO / TLSNotary) | Payment or commerce site, via the TLS session | Not without breaking the TLS-proof protocol (assumptions in DECO §3) | Full rate, hold equal to the return window |
 | **C** | Photo + OCR (today's demo) | Our attester | **Yes** | Capped low, long hold, sampled audit |
 
 Tier A needs no contract change. The POS signs `{merchantId, receiptHash, amount, purchasedAt}`. The user
@@ -174,6 +176,11 @@ benchmarked at 9.2× cheaper is the one merchants would sign with.
 
 ## 4. Plan before the deadline (Oct 4, 21:29)
 
+> **Status, Oct 2:** items 1–3 are done.
+> - Tier 1 shipped as `/merchant` plus QR scan, with a **simulated** merchant. It is tested and claimed on testnet; see `SECURITY.md`.
+> - Item 4 (hold window) is deferred to avoid redeploying live contracts.
+> - Item 5 remains roadmap.
+
 Ordered by judge impact per hour. Nothing below changes deployed contracts unless stated.
 
 1. **Tier A demo (web only, about half a day).**
@@ -182,7 +189,7 @@ Ordered by judge impact per hour. Nothing below changes deployed contracts unles
    - Keep OCR as Tier C with a visible "lowest trust" label.
 2. **Evidence-tier labels** in the claim UI and on the landing page (an hour). Be honest about which tier the
    demo uses.
-3. **Pitch rewrite:** README hero, `HACKATHON.md`, landing copy → "proof of purchase AI can't fake" with the
+3. **Pitch rewrite:** README hero, `HACKATHON.md`, landing copy → "proof from a signature, not a photo" with the
    §1.1 numbers (an hour).
 4. **Hold window (contract change, needs a redeploy).** This is a `ClaimEscrow`, or a `releaseAt` on vault
    mint plus `void(claimId)` for refunds. ⚠ The deployer has about 0.0006 ETH, so we'd need testnet ETH

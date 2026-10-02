@@ -4,7 +4,7 @@
 
 **Scan. Prove. Own.**
 
-STOCKBACK turns an **attested real-world purchase** into **pooled ownership exposure** in the brand you bought from. It runs on Arbitrum, with Solidity for settlement and policy and **Stylus (Rust)** for signature verification the EVM can't do natively.
+STOCKBACK turns an **attested purchase receipt** into **pooled ownership exposure** in the brand you bought from. It runs on Arbitrum, with Solidity for settlement and policy and **Stylus (Rust)** for signature verification the EVM can't do natively.
 
 > **Hackathon MVP. Testnet / demo only. Not audited.** Brand assets in the demo are fictional mock tokens, not securities (see [Compliance](docs/COMPLIANCE.md)).
 
@@ -21,9 +21,21 @@ Evidence ──▶ Attestation ──▶ Commitment + Nullifier ──▶ Eligib
 (off-chain)   (signed)        (on-chain, hashes only)    (policy)        (policy+budget)   (ERC-4626)
 ```
 
-A user buys Nike shoes for ₹2,000. An attester vouches for the purchase and signs a claim that contains only hashes. The user submits it. The contracts check the signature, reject replays, apply the brand's rules and caps, and deposit 0.75% of the value from a sponsor-funded budget into the **Nike brand vault** on the user's behalf. The user now holds vault shares: pooled exposure to a brand they actually buy from.
+A user buys Nike shoes for ₹2,000 and scans the merchant-signed receipt QR. The attester verifies the merchant's signature, then signs a claim that contains only hashes. The user submits it. The contracts check the signature, reject replays, apply the brand's rules and caps, and deposit 0.75% of the value from a sponsor-funded budget into the **Nike brand vault** on the user's behalf. The user now holds vault shares: pooled exposure to a brand they actually buy from.
 
 **The vault is not the moat. The moat is the verification and eligibility pipeline** connecting an off-chain economic event to an on-chain ownership allocation.
+
+## Evidence tiers: what a proof actually proves
+
+The on-chain path is identical for every claim. What differs is what the attester checked before signing. AI image models now produce receipt photos that people can't tell from real ones (`docs/RESEARCH.md`), so we don't treat a photo as proof of purchase.
+
+| Tier | Evidence | Establishes | Status |
+|---|---|---|---|
+| 1 | **Merchant-signed demo receipt**: a QR from the simulated POS at `/merchant`, with Ed25519 over merchant, brand, receipt ID, amount, currency, issue time and expiry | The receipt is unaltered since the merchant key signed it. **The merchant is simulated**; there are no merchant partnerships. | Implemented (demo) |
+| 2 | **Attested photo / OCR** (or typed) | Only that the demo attester signed what it was given. Purchase authenticity is **not** independently established. | Implemented (demo) |
+| 3 | **Verified payment / order evidence**, e.g. zkTLS over an order or bank page | Provenance from the payment or order source itself | **Roadmap, not implemented** |
+
+Trust boundary, attester-key compromise analysis, and replay vs. Sybil: **[SECURITY.md](SECURITY.md#evidence-tiers-and-the-trust-boundary)**.
 
 ## Architecture
 
@@ -43,7 +55,8 @@ More diagrams (sequence, dependencies, trust boundaries, USDG flow, claim state 
 
 | Layer | Contract | Responsibility |
 |---|---|---|
-| Evidence | `tools/attester.mjs` (demo) | Normalize receipt, hash identifiers with a secret salt, sign the EIP-712 claim |
+| Evidence | `web/app/api/merchant/receipt` (simulated POS) | Sign a receipt with the demo merchant Ed25519 key, print it as a QR |
+| Evidence | `web/app/api/attest`, `tools/attester.mjs` (demo) | Verify the merchant signature (tier 1) or take user-confirmed fields (tier 2); hash identifiers with a secret salt; sign the EIP-712 claim |
 | Proof | `ReceiptCommitmentRegistry` | Claimant binding, deadline, commitment (claim ID), nullifier, orchestration, pause |
 | Proof | `ECDSAAttestationVerifier` / `stylus/receipt-prover` | Yes/no: did an allowlisted attester sign exactly this claim? |
 | Eligibility | `EligibilityPolicy` (+ `IJurisdictionPolicy`) | Brand active, currency, amount bounds, purchase age, optional KYC/region gate |
@@ -67,6 +80,8 @@ USDG is an optional **funding adapter**, not a dependency. A merchant or sponsor
 ## Security, privacy, limits
 
 - **Anti-replay**: `nullifier = keccak(tag, merchantId, receiptHash)`. The same receipt cannot be claimed twice, even with a different claimant, amount, brand or deadline.
+- **Merchant signatures (tier 1)**: every field is signed. Tampering, a wrong key, expiry, unsupported brands and already-used receipts are rejected before the attester signs. The demo POS is public, so this shows the mechanism, not fraud resistance.
+- **Attester key**: a single key. Compromise is bounded by the per-brand daily cap (100,000 demo units) and the budget, not by the attester. The Stylus verifier's attester allowlist allows rotation without a redeploy.
 - **Anti-front-running**: the claimant is signed and must be `msg.sender`.
 - **Domain separation**: EIP-712 over chain ID and registry address. Cross-chain and cross-deployment replays are tested.
 - **Bounded authority**: the verifier only returns a bool; only the registry spends budget; vault assets are unreachable by any admin. A compromised attester, verifier or owner is bounded by the caps and the unallocated budget.
@@ -105,6 +120,9 @@ The marginal cost per extra signature is about 608k gas in Solidity and about 65
 
 End-to-end transactions:
 
+- Merchant-signed receipt (tier 1) claimed in the browser via `/merchant` → QR link → `/app/scan`: `0xabd3b62b5ef8f02d5f8226c54ee237be9080b57c9b1bdf2529252279a30c5388` (15 mNKE).
+- Merchant-signed receipt claimed by the API integration test (`web/scripts/merchant-e2e.mjs`): `0x801cac69eeb2a4e0e000c8155e412f2c8a84476005dd8ec76eeb2a5dde885627`.
+
 - Nike ₹2,000 claim via the ECDSA verifier: `0x4e2c8097030ef2b0842b0e6dbb79675437637dea04dfb7531d0938a13ff9c604` (15 mNKE of exposure).
 - Registry switched to the Stylus verifier: `0xdef1f3214a7aae35a2b8b970aaf8276a1aae29ba8d3f873b7278f436a784c324`.
 - Apple ₹14,990 claim, Ed25519 attestation verified in Stylus: `0x7fe2a51a5567bec1b96e2fa389c959368fbeda7a05bacc98c3383f544fc8d9c4` (74.95 mAAPL).
@@ -124,7 +142,11 @@ All brand assets and USDG here are **mocks**. Full list: [`deployments/46630.jso
 
 ## Web app
 
-`web/` is the consumer product: a Japanese-editorial landing page, RainbowKit wallet connection, receipt scanning with on-device OCR, a demo attester API, a real claim on Robinhood testnet, and a live portfolio and activity view. See **[web/README.md](web/README.md)**.
+`web/` is the consumer product. It has:
+- a Japanese-editorial landing page and RainbowKit wallet connection
+- a **simulated merchant POS** (`/merchant`) that prints signed receipt QRs
+- QR scanning plus receipt scanning with on-device OCR
+- a demo attester API, real claims on Robinhood testnet, and a live portfolio and activity view See **[web/README.md](web/README.md)**.
 
 ```bash
 cd web && cp .env.example .env.local && npm install && npm run dev
@@ -177,9 +199,13 @@ docs/                     ARCHITECTURE, PRIVACY, COMPLIANCE, ANALYTICS, FRONTEND
 
 ## Roadmap
 
-1. **Now**: demo video, hosted deployment of `web/`.
-2. **Next**: a real merchant or payment-processor attester; multisig and timelock on configuration; claim relaying (gasless).
-3. **Later**: amount privacy (range proofs), batch claims, issuer-authorized assets behind the jurisdiction adapter.
+| | Item |
+|---|---|
+| **Implemented** | Merchant-signed receipts (simulated merchant), photo/OCR attestation, per-receipt nullifier, caps and budgets, Stylus Ed25519 verification, admin-less vaults, USDG funding adapter |
+| **Next** | A pending period with void-on-refund (needs new contracts; rewards currently settle instantly); real merchant keys inside a POS or HSM, plus a merchant key registry and revocation; attester rotation runbook and k-of-n attesters; stronger Sybil resistance; multisig and timelock on configuration; gasless claim relaying |
+| **Later** | Tier 3: payment/order-source proofs (zkTLS); amount privacy; batch claims; issuer-authorized assets behind the jurisdiction adapter |
+
+Not claimed: merchant partnerships, users, traction, or measured fraud reduction or retention effects. None exist yet.
 
 ## Hackathon alignment
 

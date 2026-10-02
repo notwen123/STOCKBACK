@@ -10,7 +10,9 @@ cp .env.example .env.local   # fill values (see below)
 npm install
 npm run dev                  # http://localhost:3000
 npm run build && npm start   # production
-npm run lint && npm test     # eslint + receipt parser check
+npm run lint && npm run typecheck && npm test   # eslint, tsc, receipt parser + 20 merchant-receipt unit tests
+npm run test:e2e             # 22 checks against a running server (BASE=…) and live testnet; CLAIMANT_KEY=… submits a real claim
+npm run check:secrets        # after build: no secret value in client bundles or git-tracked files
 ```
 
 | Env | Where | Purpose |
@@ -19,8 +21,10 @@ npm run lint && npm test     # eslint + receipt parser check
 | `ATTESTER_ED25519_SEED` | **server only** | Demo attester key for the Stylus Ed25519 verifier |
 | `ATTESTER_ECDSA_KEY` | **server only** | Demo attester key for the ECDSA verifier |
 | `ATTESTER_SALT` | **server only** | Salt for receipt-reference hashing (privacy) |
+| `MERCHANT_ED25519_SEED` | **server only** | Simulated POS signing key. Must differ from the attester key. |
+| `MERCHANT_ED25519_PUBLIC_KEY` | server | Merchant public key the attester trusts for tier-1 receipts |
 
-Server secrets are read only in `app/api/attest/route.ts`. A production build was checked to contain none of them in `.next/static`.
+Server secrets are read only in `app/api/attest/route.ts` and `app/api/merchant/receipt/route.ts`. `npm run check:secrets` verifies that no secret value appears in the client build or git-tracked files.
 
 ## Routes
 
@@ -30,7 +34,23 @@ Server secrets are read only in `app/api/attest/route.ts`. A production build wa
 | `/how-it-works` ten stages | `/app/scan` camera / upload / demo receipt → claim |
 | `/supported-brands` live brand status | `/app/portfolio` vault positions |
 | `/about` manifesto | `/app/activity` claim timeline from chain events |
+| `/merchant` **simulated** POS: signed receipt + QR | |
 | | `/app/brands`, `/app/settings` |
+
+## Merchant-signed receipt demo (tier 1)
+
+1. Open `/merchant`, pick a brand and amount, and press **Issue signed receipt**. The server signs `STOCKBACK-MERCHANT-RECEIPT-V1` over all 8 fields with the demo merchant key (`lib/merchant-pos.mjs`). It returns the receipt and a QR of `/app/scan#r=SBR1.<receipt>.<signature>`.
+2. Scan the QR with a phone camera (it opens the app), use **Merchant QR** in `/app/scan` (in-app camera via `BarcodeDetector` where supported, image upload, or paste), or press **Claim in STOCKBACK**.
+3. `/app/scan` shows the receipt as **unverified display data**. **Verify signature** posts the raw payload to `/api/attest`, which checks:
+   - the signature against `MERCHANT_ED25519_PUBLIC_KEY`
+   - expiry
+   - the brand
+   - prior use, via on-chain `previewClaim`
+
+   Only then does it sign the claim, deriving every reward field from the verified receipt.
+4. The rest of the flow is the normal claim flow below. Edited or replayed QRs are rejected (401 / 409).
+
+The merchant is **simulated** and the POS endpoint is public: anyone can mint demo receipts. On-chain caps and budgets bound the impact.
 
 ## Claim flow (real)
 
