@@ -193,7 +193,15 @@ export function Security() {
 export function FinalCta() {
   return (
     <section aria-label="Get started" className="relative isolate overflow-hidden">
-      <div className="mx-auto max-w-[900px] px-5 pb-10 pt-28 text-center sm:px-8 sm:pt-32">
+      {/* light ink landscape: blossoms frame the left, mountains the right, the statement sits in the open sky */}
+      <Image
+        src="/art/cta-sky.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-10 object-cover object-center opacity-90 [mask-image:linear-gradient(to_bottom,transparent,black_14%,black_88%,transparent)]"
+      />
+      <div className="mx-auto flex min-h-[640px] max-w-[860px] flex-col items-center justify-center px-5 py-28 text-center sm:px-8 lg:min-h-[720px]">
         <h2 className="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-extrabold leading-[1]">
           <RevealLines lines={["Your next receipt", "could be your next", <span key="own">ownership<span className="text-vermilion">.</span></span>]} />
         </h2>
@@ -201,22 +209,11 @@ export function FinalCta() {
           <ButtonLink href="/app/dashboard">
             Start Stockback <Arrow />
           </ButtonLink>
-          <ButtonLink href="/about" variant="ghost">
+          <ButtonLink href="/about" variant="ghost" className="bg-paper/70 backdrop-blur-sm">
             Read the protocol
           </ButtonLink>
         </Reveal>
       </div>
-      {/* Ink-and-blossom stream, kept quiet: it frames the statement instead of competing with it. */}
-      <Reveal y={30} delay={0.2}>
-        <Image
-          src="/art/blossom-stream.webp"
-          alt=""
-          width={1600}
-          height={534}
-          sizes="(min-width: 1200px) 1100px, 100vw"
-          className="mx-auto -mt-6 h-auto w-full max-w-[1100px] opacity-60 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
-        />
-      </Reveal>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { InkSun, Petals } from "@/components/art/Art";
 import { BrandMark } from "@/components/brand/BrandMark";
@@ -10,10 +11,11 @@ import { txUrl } from "@/lib/chain";
 const EASE = [0.22, 1, 0.36, 1] as const;
 const NIKE = brandById("NIKE")!;
 
-// Values from a real Nike claim settled on Robinhood testnet (registry 0x4273…4120).
+// Fingerprints of the receipt shown (Nike Store, Bengaluru · UPI ••••7421), derived with the
+// same attester code the app uses. `tx` is a real ₹2,000 Nike claim settled on Robinhood testnet.
 const REAL = {
-  merchantId: "0x39158f7621b782b1f708aa7853bd5ba26ce4e9ea27d3a225cfbf0faa4ef7ab32",
-  receiptHash: "0xb6ba1a13119d5a61b788c6009c9849922654bf2ce6eb92978b4faf71d90ce68e",
+  merchantId: "0x4acead6498578e2af4575124bcfe7934866ffd6c43923cc17fc7675ebb645121",
+  receiptHash: "0xde3c4463b1c9e7b0f7b2d4c5a62f669663035c501197f7a64e82e56a9bda07a1",
   tx: "0x4e2c8097030ef2b0842b0e6dbb79675437637dea04dfb7531d0938a13ff9c604",
 };
 const short = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`;
@@ -80,11 +82,39 @@ export function Journey() {
           {/* stage */}
           <div className="relative order-1 mx-auto flex h-[46vh] w-full max-w-[420px] items-center justify-center lg:order-2 lg:h-[64vh]">
             <AnimatePresence mode="wait">
-              {step < 3 ? (
+              {step === 0 ? (
+                <motion.div
+                  key="photo"
+                  initial={{ opacity: 0, y: 50, rotate: -6 }}
+                  animate={{ opacity: 1, y: 0, rotate: -3 }}
+                  exit={{ opacity: 0, scale: 0.85, rotateX: 25, filter: "blur(8px)" }}
+                  transition={{ duration: 0.7, ease: EASE }}
+                  className="relative h-full max-h-[560px] [perspective:1200px]"
+                >
+                  <Image
+                    src="/art/receipt-real.webp"
+                    alt="A paper Nike receipt from Nike Store, Bengaluru, for ₹2,000 paid by UPI"
+                    width={700}
+                    height={1397}
+                    sizes="(min-width: 1024px) 300px, 45vw"
+                    className="h-full w-auto drop-shadow-[0_40px_40px_rgba(23,23,23,.28)]"
+                  />
+                  {!reduce && (
+                    <>
+                      <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-transparent via-vermilion/20 to-transparent" style={{ ["--scan-h" as string]: "90%" }} />
+                      <div className="scan-line pointer-events-none absolute inset-x-0 top-8 h-px bg-vermilion/80" style={{ ["--scan-h" as string]: "90%" }} />
+                    </>
+                  )}
+                  {/* viewfinder corners */}
+                  {["left-0 top-0 border-l-2 border-t-2", "right-0 top-0 border-r-2 border-t-2", "bottom-0 left-0 border-b-2 border-l-2", "bottom-0 right-0 border-b-2 border-r-2"].map((c) => (
+                    <span key={c} aria-hidden="true" className={`absolute -m-3 h-7 w-7 border-vermilion ${c}`} />
+                  ))}
+                </motion.div>
+              ) : step < 3 ? (
                 <motion.div
                   key="receipt"
-                  initial={{ opacity: 0, y: 40, rotate: -4 }}
-                  animate={{ opacity: 1, y: 0, rotate: step === 0 ? -2 : 0 }}
+                  initial={{ opacity: 0, y: 30, rotateX: -20, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, scale: 0.4, rotate: 10, filter: "blur(6px)" }}
                   transition={{ duration: 0.7, ease: EASE }}
                   className="relative w-full max-w-[360px] bg-[#FBF8F1] px-7 pb-9 pt-7 font-mono text-[0.75rem] shadow-[0_50px_70px_-40px_rgba(23,23,23,.55)]"
@@ -94,17 +124,14 @@ export function Journey() {
                   </div>
                   <p className="mt-2 text-center font-display text-3xl font-extrabold tracking-[0.25em]">NIKE</p>
                   <div className="my-4 border-t border-dashed border-ink/30" />
-                  <Row k="Merchant" plain="Nike Store 042, Mumbai" hash={short(REAL.merchantId)} hashed={step >= 1} />
-                  <Row k="Receipt" plain="UPI ref ····91A" hash={short(REAL.receiptHash)} hashed={step >= 1} />
-                  <Row k="Date" plain="28 SEP 2026" hash="28 SEP 2026" hashed={false} />
+                  <Row k="Merchant" plain="Nike Store, Bengaluru" hash={short(REAL.merchantId)} hashed={step >= 1} />
+                  <Row k="Receipt" plain="UPI ••••7421" hash={short(REAL.receiptHash)} hashed={step >= 1} />
+                  <Row k="Date" plain="12 JAN 2026" hash="12 JAN 2026" hashed={false} />
                   <div className="my-4 border-t border-dashed border-ink/30" />
                   <div className="flex justify-between text-base font-medium">
                     <span>TOTAL</span>
                     <span className="tabular">₹2,000.00</span>
                   </div>
-                  {step === 0 && !reduce && (
-                    <div className="scan-line pointer-events-none absolute inset-x-0 top-0 h-px bg-vermilion" style={{ ["--scan-h" as string]: "320px" }} />
-                  )}
                   <AnimatePresence>
                     {step >= 1 && (
                       <motion.p
@@ -152,7 +179,7 @@ export function Journey() {
                   </p>
                   <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-muted">Nike vault · ERC-4626 · demo asset</p>
                   <a className="ink-link mt-5 font-mono text-xs" href={txUrl(REAL.tx)} target="_blank" rel="noreferrer">
-                    real claim · {short(REAL.tx)} ↗
+                    a real ₹2,000 Nike claim · {short(REAL.tx)} ↗
                   </a>
                 </motion.div>
               )}
