@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>Proof of purchase → proof of ownership.</b><br>
-  Merchant-signed receipts become shares of the brand you bought from, verified in Rust on Arbitrum Stylus.
+  Merchant-signed receipts become shares of the brand you bought from, verified in Rust on Arbitrum Stylus...
 </p>
 
 <p align="center">
