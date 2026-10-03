@@ -108,7 +108,8 @@ vault on the user's behalf. We formalize the claim calculus, prove replay resist
 on the loss from an attester-key compromise, and report measurements on Robinhood Chain testnet. Verifying
 Ed25519 in Stylus costs $65{,}088$ gas per signature against $608{,}542$ for the best available Solidity
 implementation (both linear fits, $R^2>0.9999$), up to $9.2\times$ cheaper, and fits $100$ signatures in one
-transaction where Solidity cannot fit $53$. The reference deployment has settled 12 real claims; it is covered
+transaction where Solidity cannot fit $53$. The reference deployment has settled 13 real claims and funded a
+reward budget in USDG through a live swap; it is covered
 by 83 Foundry tests including fuzzing and invariants, 5 Rust tests, 42 receipt-signing and live-integration
 tests and an 11-step browser suite. We state plainly what is simulated (the merchant), what is mocked (every
 brand asset) and what is not yet built.
@@ -121,7 +122,7 @@ brand asset) and what is not yet built.
 % ================================================================ 1
 \section{Introduction}
 
-A purchase leaves evidence behind: a receipt, a UPI reference, an order email. Every system that rewards
+A purchase leaves evidence behind: a receipt, a UPI or PayNow reference, an order email. Every system that rewards
 purchases, refunds damaged goods or reimburses expenses converts that evidence into money, and nearly all of
 them accept the evidence in its weakest form, an image. Generative image models have changed the cost of that
 choice. Changing one number on a receipt photograph now takes ``under a second for a few cents''; when shown an
@@ -132,6 +133,13 @@ pattern: multimodal models catch only 23\% of AI-fabricated damage photos while 
 falsely accuse honest customers~\cite{yan2026fraudbench}. The economics are well understood: when fabrication becomes cheap
 before verification becomes worthwhile, high-trust markets that delay checking attract fraud first~\cite{yin2026trust}.
 A new reward program that trusts photographs is exactly such a market.
+
+\paragraph{Scope: a global protocol, launched rail-first.} Nothing in the protocol is tied to one country. Each brand's
+currency is an ISO-4217 code stored on-chain, geography is delegated to a jurisdiction-policy adapter, and sponsors fund
+budgets in USDG, a dollar stablecoin. Launching a brand in SGD or USD is one configuration call, not a redeployment. We
+target first the markets where purchases already leave a digital merchant trail: Singapore (PayNow and SGQR) and India,
+where UPI processed 24.07 billion payments in September 2026 alone~\cite{npci2026}. The reference deployment is priced in
+INR for that reason.
 
 The reward side is also weak. Consumers belong to 14.8 loyalty programs on average and use 6.7; 73\% find
 them too complicated; roughly 60\% of coalition programs fail within ten years, and operators can expire or
@@ -190,6 +198,8 @@ only answers yes or no; vaults have no administrator. Everything inside the dash
         key it holds, never the private key.
   \item \textbf{Ed25519 on Arbitrum Stylus} (Section~\ref{sec:stylus}): a Rust verifier behind the same ABI as the Solidity verifier,
         with a measured linear gas model and the resulting batch ceilings under the 32M per-transaction cap.
+  \item \textbf{Sponsor funding in USDG} (Section~\ref{sec:arch}): budgets are topped up in USDG through an adapter that swaps
+        into the brand asset with oracle-bounded slippage, exercised by a live funding transaction (Section~\ref{sec:eval}).
   \item An \textbf{evaluation against the live chain} (Section~\ref{sec:eval}) and \textbf{findings} that only building and testing
         against deployed code surfaced (Section~\ref{sec:findings}), including one defect in the upstream code this project forked.
 \end{itemize}
@@ -655,17 +665,20 @@ Secret scan & 1 & No secret value in 679 client build files or the git-tracked t
 \end{tabularx}
 \end{table}
 
-\paragraph{On-chain activity.} As of 2 October 2026 the registry has settled \textbf{12 claims} from \textbf{3 wallets}
-(10 Nike, 1 Apple, 1 Starbucks), allocating 229.45 demo units in total. Representative transactions:
+\paragraph{On-chain activity.} As of 3 October 2026 the registry has settled \textbf{13 claims} from \textbf{3 wallets}
+(11 Nike, 1 Apple, 1 Starbucks), allocating 248.19 demo units in total, and one sponsor budget has been funded in USDG. Representative transactions:
 
 \begin{center}\small
 \begin{tabular}{@{}lll@{}}
 \toprule
-Claim & Transaction & Gas used\\
+Action & Transaction & Gas used\\
 \midrule
 Ed25519 attestation via Stylus (Apple, \inr 14{,}990) & \ttt{0x7fe2a51a\ldots d9c4} & 372{,}294\\
 Merchant-signed receipt, browser (Nike, \inr 2{,}000) & \ttt{0xabd3b62b\ldots 5388} & 290{,}374\\
 Merchant-signed receipt, API suite (Nike, \inr 2{,}000) & \ttt{0x801cac69\ldots 5627} & 288{,}025\\
+Merchant-signed receipt, demo film (Nike, \inr 2{,}499) & \ttt{0x1fc40e3e\ldots a97} & 290{,}220\\
+\midrule
+USDG budget funding (100 USDG $\to$ 10{,}000 mNKE, mock USDG) & \ttt{0x3d8de149\ldots 6c6d} & 192{,}930\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -757,6 +770,7 @@ states what it does not yet do. Every number in this paper was measured on the d
 \bibitem{wu2026forger} J.~Wu, Y.~Zhou, D.~T.~Ng, X.~Shen, K.~Zewde, A.~Raj, T.~Duong, S.~Ren. \emph{When the Forger Is the Judge: GPT-Image-2 Cannot Recognize Its Own Faked Documents.} arXiv:2604.25213, 2026.
 \bibitem{zhang2026receipt} Y.~Zhang, S.~Ren, et al. \emph{GPT4o-Receipt: A Dataset and Human Study for AI-Generated Document Forensics.} arXiv:2603.11442, 2026.
 \bibitem{yan2026fraudbench} X.~Yan, B.~Chen, et al. \emph{FraudBench: A Multimodal Benchmark for Detecting AI-Generated Fraudulent Refund Evidence.} arXiv:2605.08820, 2026.
+\bibitem{npci2026} National Payments Corporation of India. \emph{UPI Product Statistics}, September 2026. \url{https://www.npci.org.in/what-we-do/upi/product-statistics}.
 \bibitem{yin2026trust} X.~Yin, F.~Wen. \emph{When Trust Attracts Fraud: AI and Trust Arbitrage.} Economics Letters; arXiv:2609.27404, 2026.
 \bibitem{javarone2026nft} M.~A.~Javarone, S.~Leonardos, C.~Ventre. \emph{NFT-Based Reward Mechanisms: Sybil Farming, Vesting, and Stochastic Verification.} arXiv:2609.13064, 2026.
 \bibitem{luo2025airdrop} J.~Luo, H.~Kang, S.~Zheng, X.~Liu. \emph{Toward Resilient Airdrop Mechanisms: Empirical Measurement of Hunter Profits and Airdrop Game Theory Modeling.} arXiv:2503.14316, 2025.
