@@ -740,10 +740,11 @@ const mkBars = `<div style="display:flex;align-items:flex-end;gap:30px;height:40
   .join("")}</div>`;
 D(6, "market", slide(6, "Market", `
   <div class="abs" style="left:96px;right:96px;top:350px;display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:64px;align-items:end">
-    <div><p class="big" style="font-size:190px;color:var(--shu)">24.07B</p><p class="cap" style="font-size:27px;margin-top:14px">UPI payments in India in September 2026 alone. Each one is a purchase that could be sealed.</p><p class="src" style="margin-top:12px">NPCI UPI product statistics</p></div>
+    <div><p class="big" style="font-size:190px;color:var(--shu)">24.07B</p><p class="cap" style="font-size:27px;margin-top:14px">UPI payments in India in September 2026 alone. Singapore's PayNow and SGQR leave the same merchant trail. Each one is a purchase that could be sealed.</p><p class="src" style="margin-top:12px">NPCI UPI product statistics</p></div>
     <div>${mkBars}<p class="cap" style="font-size:24px;margin-top:20px">Loyalty software market, growing 10.7% a year</p><p class="src" style="margin-top:12px">Grand View Research, 2026</p></div>
     <div><p class="big" style="font-size:160px">+244%</p><p class="cap" style="font-size:24px;margin-top:14px">digital document forgeries, year on year. Verified receipts become a need.</p><p class="src" style="margin-top:12px">Entrust 2025, via arXiv:2604.25213</p></div>
   </div>
+  <p class="abs" style="left:96px;right:96px;top:250px;font-size:26px;color:var(--charcoal)"><b style="color:var(--sumi)">Global protocol, rail-first launch.</b> Currency is set per brand, geography is a policy adapter, budgets fund in USDG. We start where payments are already digital: Singapore and India.</p>
   <p class="abs src" style="left:96px;bottom:54px">Third-party figures, shown as context. STOCKBACK has no users or revenue yet.</p>`,
   { title: "The rails already exist." }));
 
@@ -808,10 +809,10 @@ D(9, "proof", slide(9, "Proof", `
   <div class="abs" style="left:96px;top:390px">${benchChart(1100, { row: 112, bar: 32, label: 200, font: 21 })}</div>
   <div class="abs" style="left:1350px;right:96px;top:330px;display:grid;gap:56px">
     <div><p class="big" style="font-size:96px;color:var(--shu)">9.2x</p><p class="cap">less gas than Solidity</p></div>
-    <div><p class="big" style="font-size:96px">130</p><p class="cap">automated tests: 83 Solidity, 5 Rust, 42 web</p></div>
-    <div><p class="big" style="font-size:96px">9</p><p class="cap">contracts: 8 Solidity, 1 Rust on Stylus</p></div>
+    <div><p class="big" style="font-size:96px">130</p><p class="cap">tests across 9 contracts (8 Solidity, 1 Rust on Stylus) and the web app</p></div>
+    <div><p class="big" style="font-size:80px;white-space:nowrap">100 USDG</p><p class="cap">funded the Nike budget on-chain, swapped to 10,000 mNKE</p></div>
   </div>
-  <p class="abs src" style="left:96px;bottom:54px">Gas measured with eth_estimateGas on Robinhood Chain testnet. Merchant-signed claim: ${short(FACTS.sealedTx)}. Registry: ${short(FACTS.registry)}.</p>`,
+  <p class="abs src" style="left:96px;bottom:54px">Gas measured with eth_estimateGas on Robinhood Chain testnet. Merchant-signed claim: ${short(FACTS.sealedTx)}. USDG funding: ${short(FACTS.usdgTx)} (mock USDG). Registry: ${short(FACTS.registry)}.</p>`,
   { title: "Built, deployed, measured." }));
 
 // 10 Impact & benefits
@@ -826,7 +827,7 @@ D(10, "impact", slide(10, "Impact", `
     <div class="card" style="position:relative;min-height:600px;padding:44px 48px;overflow:hidden">
       <div class="abs" style="right:40px;bottom:40px">${kakuin(220, { rotate: -8 })}</div>
       <h3 style="font-size:54px">Brands</h3>
-      <div style="display:grid;gap:22px;margin-top:34px;max-width:560px">${ben(["Reward only signed, verified purchases", "Budgets and daily caps they set", "No coalition operator taking a cut", "Fund rewards in USDG"])}</div>
+      <div style="display:grid;gap:22px;margin-top:34px;max-width:560px">${ben(["Pay only for signed, verified purchases", "Budgets and daily caps they set", "No coalition operator taking a 10–30% cut", "Fund rewards in USDG, in any market"])}</div>
     </div>
   </div>`,
   { title: "Everyone keeps what's theirs." }));

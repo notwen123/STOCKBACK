@@ -88,5 +88,6 @@ export const FACTS = {
   registry: "0x4273b12cD4A65c2180d4e65Bcb4254825cE64120",
   stylus: "0x9ae8a390121ba71545e9923b333d60e7e3ccd3bd",
   sealedTx: "0xabd3b62b5ef8f02d5f8226c54ee237be9080b57c9b1bdf2529252279a30c5388",
+  usdgTx: "0x3d8de1490c0756b92e7e9a046419c1c14aa8913e4545a22171c2362715656c6d",
   site: "https://stockbacks.vercel.app",
 };
