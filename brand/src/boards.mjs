@@ -931,3 +931,21 @@ add(
     <div class="abs" style="right:44px;top:34px;display:flex;align-items:center;gap:12px">${seal(48, { ink: false })}<span style="font:700 24px var(--display);letter-spacing:.2em">STOCKBACK</span></div>`,
   ),
 );
+
+// ============================================================== README HERO (1600×640, rendered at 2x)
+add(
+  "readme/hero",
+  1600,
+  640,
+  page(
+    `<img src="art/landscape.png" class="abs" style="right:-180px;top:-40px;height:720px">
+    <div class="fill" style="background:linear-gradient(90deg,var(--washi) 36%,rgba(244,239,227,.8) 52%,rgba(244,239,227,0) 74%)"></div>
+    <div class="abs" style="left:88px;top:70px">${wordmark(26)}</div>
+    <h1 class="abs display" style="left:82px;top:150px;font-size:118px;line-height:.95">Every receipt,<br>sealed.</h1>
+    <div class="abs" style="left:700px;top:270px">${seal(120, { rotate: -9 })}</div>
+    <p class="abs" style="left:88px;top:420px;width:640px;font-size:27px;line-height:1.4;color:var(--charcoal)">Merchant-signed receipts become shares of the brand you bought from, verified in Rust on Arbitrum Stylus.</p>
+    <div class="abs" style="left:88px;bottom:56px;display:flex;gap:14px;font:500 17px var(--sans)">
+      ${["Live on Robinhood Chain testnet", "9.2x less gas with Stylus", "Once per receipt, on-chain"].map((x) => `<span style="border:1.5px solid rgba(23,23,23,.35);padding:8px 14px;background:rgba(244,239,227,.8)">${x}</span>`).join("")}
+    </div>`,
+  ),
+);
