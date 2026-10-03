@@ -28,6 +28,13 @@ Why tiers matter: recent work shows humans detect AI-forged receipt photos at ch
 
 - Loyalty points are closed-loop, expire and are illiquid. STOCKBACK rewards a purchase with exposure to the brand the customer actually buys from, held in a standard ERC-4626 vault the user controls.
 - Merchants fund a capped, per-brand budget, directly or in USDG. Rules are public and deterministic (`RewardPolicy`), and sponsors can withdraw unallocated budget.
+- **Who pays and why:**
+  - Brands pay because they currently fund rewards on receipts they can't trust, and coalitions charge them 10–30% while keeping their customer data.
+  - With STOCKBACK they pay only for merchant-signed purchases, within caps they set, with no operator in between.
+- **Global protocol, rail-first launch:**
+  - Currency is set per brand (ISO-4217 on-chain), geography is an `IJurisdictionPolicy` adapter, and funding is in USDG.
+  - We launch where payments already carry a digital merchant trail: Singapore (PayNow/SGQR) and India (UPI, 24.07B payments in September 2026, NPCI).
+  - The demo is priced in INR for that reason. A brand in SGD or USD is one `setBrandRules` call.
 - **Not claimed**: users, merchants, partnerships, traction, or any measured fraud reduction or retention effect. None exist yet. The `/merchant` POS is a simulation.
 
 ## Innovation and creativity
@@ -54,12 +61,15 @@ Why tiers matter: recent work shows humans detect AI-forged receipt photos at ch
 ## USDG
 
 - `USDGRewardAdapter`: a sponsor pays the budget in USDG, which is swapped to the brand asset through SwapRouter02 with an oracle-bounded `minOut` and freshness checks, then credited to `RewardPool`.
+- **Live on testnet:** tx `0x3d8de1490c0756b92e7e9a046419c1c14aa8913e4545a22171c2362715656c6d` emitted `FundedWithUSDG`, swapping 100 USDG into 10,000 mNKE and crediting the Nike reward budget.
 - **No yield or APY is claimed.** On testnet, USDG is `MockUSDG`. Paxos USDG's Robinhood mainnet address is known from the Wield config (`config/networks.json`) but is not used.
 
 ## Robinhood Chain
 
 - **Deployed on Robinhood Chain testnet (46630)**. Registry: `0x4273b12cD4A65c2180d4e65Bcb4254825cE64120`. All addresses are in `deployments/46630.json`.
 - `script/demo.sh` ran end to end on testnet: claim, portfolio, replay rejected, USDG top-up.
+- **13 claims from 3 wallets** have settled on the registry, including the merchant-signed, Stylus-verified claim recorded in the demo film (tx `0x1fc40e3e…7afa97`).
+- The live web app (`stockbacks.vercel.app`) reads every balance and activity row straight from Robinhood Chain, with no indexer and no mocked state.
 
 ## Status checklist
 
