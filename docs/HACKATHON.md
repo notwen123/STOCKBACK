@@ -89,4 +89,5 @@ Why tiers matter: recent work shows humans detect AI-forged receipt photos at ch
 | Merchant-signed receipts (tier 1) | done with a **simulated** merchant: `/merchant` POS, QR scan, signature verification, 20 unit + 22 integration checks, browser claim on testnet |
 | Pending rewards / refunds, Sybil resistance, key-rotation tooling | not built (documented in `SECURITY.md`) |
 | Payment/order-source proofs (zkTLS) | not built (roadmap) |
-| Demo video | not recorded |
+| Demo video | done: [2:30 film on YouTube](https://youtu.be/70fX_mN6MuE), real testnet claim on camera |
+| Whitepaper / deck | done: `whitepaper/STOCKBACK-Whitepaper.pdf`, `brand/png/STOCKBACK-deck.pdf` |

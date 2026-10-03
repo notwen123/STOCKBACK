@@ -1,5 +1,7 @@
 # STOCKBACK demo film (2:30)
 
+Watch on YouTube: https://youtu.be/70fX_mN6MuE
+
 `release/STOCKBACK-demo.mp4`: 1080p30, -14 LUFS, captions in `release/STOCKBACK-demo.srt`.
 
 Everything is produced from this folder with open-source tools:

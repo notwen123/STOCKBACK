@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://stockbacks.vercel.app"><b>Live app</b></a> ·
-  <a href="film/release/STOCKBACK-demo.mp4"><b>Demo film (2:30)</b></a> ·
+  <a href="https://youtu.be/70fX_mN6MuE"><b>Demo film (2:30)</b></a> ·
   <a href="whitepaper/STOCKBACK-Whitepaper.pdf"><b>Whitepaper</b></a> ·
   <a href="brand/png/STOCKBACK-deck.pdf"><b>Deck</b></a> ·
   <a href="SECURITY.md"><b>Security</b></a> ·
@@ -35,7 +35,7 @@
 ## Watch the demo
 
 <p align="center">
-  <a href="film/release/STOCKBACK-demo.mp4"><img src="docs/assets/readme/video-thumb.jpg" alt="Watch the STOCKBACK demo film" width="80%"></a>
+  <a href="https://youtu.be/70fX_mN6MuE"><img src="docs/assets/readme/video-thumb.jpg" alt="Watch the STOCKBACK demo film" width="80%"></a>
 </p>
 
 A 2:30 film with a real claim settled on Robinhood Chain testnet ([tx `0x1fc40e3e…7afa97`](https://explorer.testnet.chain.robinhood.com/tx/0x1fc40e3e608da143515f62a81830072265914606311f56ec34ca7adfee7afa97)). Every frame, the score and the mix were made in code ([film/](film/README.md)).
