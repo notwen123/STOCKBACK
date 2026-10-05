@@ -4,7 +4,7 @@ Watch on YouTube: https://youtu.be/70fX_mN6MuE
 
 `release/STOCKBACK-demo.mp4`: 1080p30, -14 LUFS, captions in `release/STOCKBACK-demo.srt`.
 
-Everything is produced from this folder with open-source tools:
+Everything is produced from this folder with open-source tools. The general method, reusable for any product, is written up in [FRAMEWRIGHT.md](FRAMEWRIGHT.md).
 
 | Step | Command | What it does |
 |---|---|---|
